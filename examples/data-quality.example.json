@@ -1,0 +1,12 @@
+{
+  "run_id": "2026-09-28-eod",
+  "status": "PASS",
+  "cutoff": "2026-09-29T00:00:00Z",
+  "datasets": [
+    "crypto_grouped",
+    "point_in_time_universe",
+    "cross_asset_context"
+  ],
+  "findings": [],
+  "cutoff_semantics": "EXCLUSIVE_UTC_BOUNDARY"
+}

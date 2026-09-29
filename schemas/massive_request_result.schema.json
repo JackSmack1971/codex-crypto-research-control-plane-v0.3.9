@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Massive request completion result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "permit_id",
+    "outcome"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "permit_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "outcome": {
+      "enum": [
+        "SUCCESS",
+        "RATE_LIMIT",
+        "NOT_ENTITLED",
+        "ERROR"
+      ]
+    },
+    "warning": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "request_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "row_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "pagination_terminal": {
+      "enum": [
+        "TRUE",
+        "FALSE",
+        "UNKNOWN",
+        null
+      ]
+    },
+    "next_url_present": {
+      "enum": [
+        "TRUE",
+        "FALSE",
+        "UNKNOWN",
+        null
+      ]
+    }
+  }
+}

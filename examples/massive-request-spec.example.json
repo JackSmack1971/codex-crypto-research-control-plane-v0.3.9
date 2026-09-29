@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "label": "capability:crypto_universe_pit",
+  "endpoint_path": "/v3/reference/tickers",
+  "params": {
+    "active": true,
+    "date": "2026-09-28",
+    "limit": 1000,
+    "market": "crypto",
+    "order": "asc",
+    "sort": "ticker"
+  }
+}

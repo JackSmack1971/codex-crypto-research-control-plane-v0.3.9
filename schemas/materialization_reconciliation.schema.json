@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Materialization reconciliation report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id", "attempt_id", "acquisition_path", "data_dir", "status",
+    "manifested_inputs", "diagnostics", "orphaned_inputs", "mismatches"
+  ],
+  "properties": {
+    "run_id": {"type": "string", "minLength": 1},
+    "attempt_id": {"type": "string", "minLength": 1},
+    "acquisition_path": {"type": "string", "minLength": 1},
+    "data_dir": {"type": "string", "minLength": 1},
+    "status": {"enum": ["PASS", "BLOCK"]},
+    "manifested_inputs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "diagnostics": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "orphaned_inputs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "mismatches": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+  }
+}

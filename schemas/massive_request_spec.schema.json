@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Massive request permit specification",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "label",
+    "endpoint_path",
+    "params"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1
+    },
+    "endpoint_path": {
+      "type": "string",
+      "pattern": "^/"
+    },
+    "params": {
+      "type": "object"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "permit_id": "req-0001-example",
+  "outcome": "SUCCESS",
+  "warning": null,
+  "request_id": null,
+  "row_count": 625,
+  "pagination_terminal": "TRUE",
+  "next_url_present": "FALSE"
+}
