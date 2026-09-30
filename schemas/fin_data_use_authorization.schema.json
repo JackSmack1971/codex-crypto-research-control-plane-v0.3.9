@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "source_id", "provider", "scope", "status", "reason", "evidence", "required_evidence_to_authorize"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "source_id": {"const": "fin_data_mcp_render_prod"},
+    "provider": {"const": "OKX"},
+    "scope": {"type": "string", "minLength": 1},
+    "status": {"enum": ["AUTHORIZED", "BLOCKED_PENDING_RIGHTS_CONFIRMATION", "DENIED"]},
+    "reason": {"type": "string", "minLength": 1},
+    "evidence": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["uri", "description", "observed_at"],
+        "properties": {
+          "uri": {"type": "string", "format": "uri"},
+          "description": {"type": "string", "minLength": 1},
+          "observed_at": {"type": "string", "format": "date-time"}
+        }
+      }
+    },
+    "required_evidence_to_authorize": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "authorization_decision": {
+      "type": ["object", "null"], "additionalProperties": false,
+      "required": ["approved_by", "approved_at", "approved_scope", "rights_document", "rights_document_digest", "review_reference", "reviewed_commit", "independent_reviewer"],
+      "properties": {
+        "approved_by": {"type": "string", "minLength": 1},
+        "approved_at": {"type": "string", "format": "date-time"},
+        "approved_scope": {"type": "string", "minLength": 1},
+        "rights_document": {"type": "string", "minLength": 1},
+        "rights_document_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "review_reference": {"type": "string", "format": "uri"},
+        "reviewed_commit": {"type": "string", "pattern": "^[0-9a-f]{40}([0-9a-f]{24})?$"},
+        "independent_reviewer": {"type": "string", "minLength": 1}
+      }
+    }
+  },
+  "allOf": [
+    {"if": {"properties": {"status": {"const": "AUTHORIZED"}}, "required": ["status"]},
+     "then": {"properties": {"authorization_decision": {"type": "object"}}, "required": ["authorization_decision"]}}
+  ]
+}

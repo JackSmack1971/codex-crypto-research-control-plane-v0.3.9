@@ -10,7 +10,7 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts/control_plane"))
 from fin_data_mcp_client import (_complete_payload, _rate_limit_signal, _wire_authorization_error,
-                                 invoke)  # noqa: E402
+                                 _provider_use_authorization_error, invoke)  # noqa: E402
 
 
 class FinDataMcpClientTests(unittest.TestCase):
@@ -24,6 +24,10 @@ class FinDataMcpClientTests(unittest.TestCase):
         self.assertTrue(_rate_limit_signal(200, {"code": -32000, "message": "RATE_LIMIT exceeded"}))
         self.assertTrue(_rate_limit_signal(200, {"message": "Too many requests"}))
         self.assertFalse(_rate_limit_signal(200, {"message": "invalid instrument"}))
+
+    def test_provider_use_authorization_is_separately_blocked_by_rights_review(self):
+        self.assertEqual("provider_use_authorization_blocked:BLOCKED_PENDING_RIGHTS_CONFIRMATION",
+                         _provider_use_authorization_error())
 
     def test_diagnostic_tool_is_explicit_read_only_and_schema_bounded(self):
         capability = "fin.mcp.diagnostic.crypto_all_tickers"
@@ -47,7 +51,23 @@ class FinDataMcpClientTests(unittest.TestCase):
             self.assertFalse((root / "ledger.json").exists())
             self.assertFalse((root / "result.json").exists())
 
+    def test_client_rejects_live_call_when_data_use_rights_are_unverified(self):
+        endpoint = "https://fin-data-mcp-http-v02-prod.onrender.com/mcp"
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            outcome = invoke(endpoint, "dep-prod", root / "ledger.json", "fin.mcp.initialize", "initialize",
+                             "initialize", {}, root / "result.json")
+        self.assertEqual("runtime_authorization_denied:provider_use_authorization_blocked:"
+                         "BLOCKED_PENDING_RIGHTS_CONFIRMATION", outcome["transport_error"])
+        self.assertFalse((root / "ledger.json").exists())
+        self.assertFalse((root / "result.json").exists())
+
     def test_client_rejects_unbound_method_and_tool_before_permit_or_network(self):
+        self.assertEqual("protocol_method_not_authorized_for_capability",
+                         _wire_authorization_error("fin.crypto.ticker", "crypto_ticker", "initialize", {}))
+        self.assertEqual("wire_tool_name_mismatch",
+                         _wire_authorization_error("fin.crypto.ticker", "crypto_ticker", "tools/call",
+                                                   {"name": "write_orders", "arguments": {}}))
         endpoint = "https://fin-data-mcp-http-v02-prod.onrender.com/mcp"
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
@@ -56,9 +76,10 @@ class FinDataMcpClientTests(unittest.TestCase):
             wrong_tool = invoke(endpoint, "dep-prod", root / "ledger.json", "fin.crypto.ticker",
                                 "crypto_ticker", "tools/call",
                                 {"name": "write_orders", "arguments": {}}, root / "tool.json")
-            self.assertEqual("runtime_authorization_denied:protocol_method_not_authorized_for_capability",
+            blocked = "runtime_authorization_denied:provider_use_authorization_blocked:"
+            self.assertEqual(blocked + "BLOCKED_PENDING_RIGHTS_CONFIRMATION",
                              wrong_method["transport_error"])
-            self.assertEqual("runtime_authorization_denied:wire_tool_name_mismatch",
+            self.assertEqual(blocked + "BLOCKED_PENDING_RIGHTS_CONFIRMATION",
                              wrong_tool["transport_error"])
             self.assertFalse((root / "ledger.json").exists())
             self.assertFalse((root / "method.json").exists())
@@ -89,6 +110,7 @@ class FinDataMcpClientTests(unittest.TestCase):
 
         request_body = []
         with tempfile.TemporaryDirectory() as td, \
+                patch("fin_data_mcp_client._provider_use_authorization_error", return_value=None), \
                 patch("fin_data_mcp_client._permit", return_value={"permit_id": "permit-test"}), \
                 patch("fin_data_mcp_client._record", side_effect=lambda _ledger, _id, _file, value:
                       captured.update(value) or "RECORDED:SUCCESS"), \

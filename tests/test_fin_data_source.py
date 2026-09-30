@@ -5,6 +5,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -13,6 +14,8 @@ from fin_data_source import (build_manifest, materialize, qualify, verify_materi
                              _evaluate_qualification, _bind_snapshot_to_ledger, _rows, assemble_capture,
                              _value_matches_schema)  # noqa: E402
 from common import digest  # noqa: E402
+from fin_data_use_authorization import load_policy as load_use_authorization, policy_digest  # noqa: E402
+from validate_artifact import validate as validate_artifact  # noqa: E402
 from source_evidence import validate_bundle, validate_source_manifest  # noqa: E402
 from build_evidence_bundle import build as build_bundle  # noqa: E402
 
@@ -218,6 +221,7 @@ class FinDataQualificationTests(unittest.TestCase):
                                         "2026-09-30T00:00:00Z", self.now)
         self.assertEqual([], manifest["datasets"])
         self.assertEqual("NOT_ADMITTED", manifest["admissibility"])
+        self.assertEqual("provider_use_authorization_blocked", manifest["degradation_reason"])
         self.assertEqual(0, len(rows))
         self.assertEqual([], validate_source_manifest(manifest))
 
@@ -278,6 +282,10 @@ class FinDataQualificationTests(unittest.TestCase):
         self.assertEqual(report["snapshot_digest"], replayed["snapshot_digest"])
         self.assertEqual("AVAILABLE", replayed["endpoint_status"])
         self.assertEqual("DEGRADED", replayed["status"])
+        self.assertEqual("BLOCKING", replayed["health_severity"])
+        self.assertEqual("BLOCKED_PENDING_RIGHTS_CONFIRMATION", replayed["runtime_authorization"]["status"])
+        report_schema = json.loads((ROOT / "schemas/fin_data_qualification_report.schema.json").read_text(encoding="utf-8"))
+        self.assertEqual([], validate_artifact(replayed, report_schema))
         self.assertEqual(9, sum(item["status"] == "QUALIFIED" for item in replayed["capabilities"].values()))
         self.assertEqual("pagination_completion_unverified",
                          replayed["capabilities"]["fin.crypto.instrument_discovery"]["reason"])
@@ -287,6 +295,76 @@ class FinDataQualificationTests(unittest.TestCase):
         self.assertFalse(ledger["tainted"])
         self.assertEqual(16, len(ledger["calls"]))
         self.assertEqual(report["ledger_digest"], ledger["content_digest"])
+
+    def test_malformed_authorized_policy_is_reported_as_blocking(self):
+        policy = json.loads((ROOT / "config/fin-data-use-authorization.json").read_text(encoding="utf-8"))
+        policy["status"] = "AUTHORIZED"
+        policy["authorization_decision"] = None
+        with patch("fin_data_source.load_use_authorization", return_value=policy):
+            result = _evaluate_qualification(self.snapshot, self.config, self.now, self.test_contracts)
+        self.assertEqual("BLOCKING", result["health_severity"])
+        self.assertEqual("DENIED", result["runtime_authorization"]["status"])
+        self.assertEqual("provider_use_authorization_decision_invalid", result["runtime_authorization"]["reason"])
+
+    def test_old_or_changed_rights_ledger_cannot_admit_under_authorized_policy(self):
+        import fin_data_source
+
+        policy = load_use_authorization()
+        policy["status"] = "AUTHORIZED"
+        policy["authorization_decision"] = {
+            "approved_by": "authorized-reviewer", "approved_at": "2026-09-30T04:00:00Z",
+            "approved_scope": policy["scope"], "rights_document": "research/rights/okx-license.pdf",
+            "rights_document_digest": "sha256:" + "1" * 64,
+            "review_reference": "https://github.com/example/policy-review/pull/1",
+            "reviewed_commit": "a" * 40, "independent_reviewer": "independent-reviewer",
+        }
+        authorization_digest = policy_digest(policy)
+        capture = ROOT / "research/sources/fin-data-current-qualification-2026-09-30-attempt-20260930T035157Z"
+        ledger = json.loads((capture / "request-ledger.json").read_text(encoding="utf-8"))
+        capabilities = json.loads(json.dumps(self.config))
+        cap = next(item for item in capabilities["capabilities"] if item["capability_id"] == "fin.crypto.funding")
+        cap["admission"] = "ADMITTED"
+        source_registry = json.loads((ROOT / "config/source-registry.json").read_text(encoding="utf-8"))
+        source = next(item for item in source_registry["sources"] if item["source_id"] == "fin_data_mcp_render_prod")
+        contract_registry = json.loads((ROOT / "config/fin-data-response-contracts.json").read_text(encoding="utf-8"))
+
+        for policy_binding in (None, "sha256:" + "2" * 64):
+            with self.subTest(policy_binding=policy_binding):
+                bound_ledger = json.loads(json.dumps(ledger))
+                if policy_binding is not None:
+                    bound_ledger["provider_use_authorization_digest"] = policy_binding
+                    bound_ledger["content_digest"] = digest({key: value for key, value in bound_ledger.items()
+                                                              if key != "content_digest"})
+                snapshot = json.loads(json.dumps(self.snapshot))
+                snapshot["verified_request_ledger"] = bound_ledger
+                snapshot_digest = digest(snapshot)
+                report = {
+                    "source_id": "fin_data_mcp_render_prod", "snapshot_digest": snapshot_digest,
+                    "capability_policy_digest": digest(capabilities),
+                    "response_contract_policy_digest": digest(contract_registry),
+                    "endpoint_url": snapshot["endpoint_url"], "deployment_id": snapshot["deployment_id"],
+                    "ledger_digest": bound_ledger["content_digest"],
+                    "runtime_authorization": {"status": "AUTHORIZED", "policy_digest": authorization_digest},
+                    "capabilities": {cap["capability_id"]: {
+                        "status": "QUALIFIED", "admitted": True}},
+                }
+                snapshot["qualification_report"] = report
+                original_read = fin_data_source._read
+
+                def read(path):
+                    if Path(path).resolve() == (ROOT / "config/source-capabilities/fin-data.json").resolve():
+                        return capabilities
+                    return original_read(path)
+
+                with patch("fin_data_source.load_use_authorization", return_value=policy), \
+                        patch("fin_data_source.use_authorization_error", return_value=None), \
+                        patch("fin_data_use_authorization.authorization_error", return_value=None), \
+                        patch("fin_data_source._read", side_effect=read):
+                    manifest, _rows = build_manifest(snapshot, cap, "2026-09-30-eod", "rights-transition-test",
+                                                     "2026-10-01T00:00:00Z", "2026-09-30T04:00:11Z")
+                self.assertEqual("NOT_ADMITTED", manifest["admissibility"])
+                self.assertEqual("provider_use_authorization_binding_missing_or_changed",
+                                 manifest["degradation_reason"])
 
     def test_unprobed_source_seals_explicit_blocked_manifest_without_fabricated_rows(self):
         cap = self.config["capabilities"][0]

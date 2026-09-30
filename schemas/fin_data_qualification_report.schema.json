@@ -14,6 +14,7 @@
     "endpoint_reason": {"type": ["string", "null"]},
     "status": {"enum": ["QUALIFIED", "DEGRADED", "BLOCKED", "UNAVAILABLE"]},
     "capabilities": {"type": "object", "additionalProperties": {"type": "object", "required": ["tool_name", "status", "severity", "reason", "age_seconds", "admitted"], "properties": {"tool_name": {"type": "string"}, "status": {"enum": ["QUALIFIED", "DEGRADED", "BLOCKED", "UNAVAILABLE"]}, "severity": {"enum": ["INFO", "DEGRADED", "BLOCKING"]}, "reason": {"type": ["string", "null"]}, "age_seconds": {"type": ["integer", "null"], "minimum": 0}, "admitted": {"type": "boolean"}}}},
+    "runtime_authorization": {"type": "object", "additionalProperties": false, "required": ["status", "reason", "policy_digest"], "properties": {"status": {"enum": ["AUTHORIZED", "BLOCKED_PENDING_RIGHTS_CONFIRMATION", "DENIED"]}, "reason": {"type": "string"}, "policy_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}}},
     "fallback": {"const": "NONE"},
     "snapshot_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
     "capability_policy_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},

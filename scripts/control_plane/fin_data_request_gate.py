@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts" / "control_plane"))
 from common import digest  # noqa: E402
 from validate_artifact import validate as validate_schema  # noqa: E402
+from fin_data_use_authorization import authorization_error, load_policy, policy_digest  # noqa: E402
 
 
 def _now() -> str:
@@ -49,9 +50,11 @@ def main() -> int:
             if path.exists():
                 print("IMMUTABLE_CONFLICT:" + str(path)); return 3
             policy = _read(ROOT / "config/fin-data-request-policy.json")
+            use_authorization = load_policy()
             diagnostic_policy = _read(ROOT / "config/fin-data-diagnostic-operations.json")
             _write(path, {"schema_version": "1.0", "source_id": "fin_data_mcp_render_prod",
                           "attempt_id": args.attempt_id, "created_at": _now(), "policy_digest": digest(policy),
+                          "provider_use_authorization_digest": policy_digest(use_authorization),
                           "diagnostic_policy_digest": digest(diagnostic_policy),
                           "status": "OPEN", "tainted": False, "calls": []})
             print("LEDGER_READY:" + str(path)); return 0
@@ -66,6 +69,9 @@ def main() -> int:
             if (any(call.get("capability_id") in diagnostic_operations for call in ledger.get("calls", []))
                     and ledger.get("diagnostic_policy_digest") != diagnostic_digest):
                 print("LEDGER_DIAGNOSTIC_POLICY_IDENTITY_MISMATCH"); return 1
+            if (ledger.get("provider_use_authorization_digest") is not None
+                    and ledger.get("provider_use_authorization_digest") != policy_digest(load_policy())):
+                print("LEDGER_PROVIDER_USE_AUTHORIZATION_IDENTITY_MISMATCH"); return 1
             expected = ledger.get("content_digest")
             actual = digest({key: value for key, value in ledger.items() if key != "content_digest"})
             if ledger.get("status") != "SEALED" or expected != actual:
@@ -85,6 +91,12 @@ def main() -> int:
         if ledger.get("status") != "OPEN" or ledger.get("tainted"):
             print("LEDGER_HALTED_OR_CLOSED"); return 4
         if args.command == "permit":
+            use_authorization = load_policy()
+            use_error = authorization_error(use_authorization)
+            if use_error:
+                print("SOURCE_RUNTIME_AUTHORIZATION_BLOCKED:" + use_error); return 4
+            if ledger.get("provider_use_authorization_digest") != policy_digest(use_authorization):
+                print("LEDGER_PROVIDER_USE_AUTHORIZATION_IDENTITY_MISMATCH"); return 4
             policy = _read(ROOT / "config/fin-data-request-policy.json")
             caps = _read(ROOT / "config/source-capabilities/fin-data.json")["capabilities"]
             allowed = next((item for item in caps if item["capability_id"] == args.capability_id), None)

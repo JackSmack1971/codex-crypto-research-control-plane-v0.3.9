@@ -19,6 +19,7 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts" / "control_plane"))
 from common import digest  # noqa: E402
+from fin_data_use_authorization import authorization_error, load_policy  # noqa: E402
 
 
 def _now() -> str:
@@ -146,6 +147,11 @@ def _wire_authorization_error(capability_id: str, tool_name: str, method: str,
     return None
 
 
+def _provider_use_authorization_error() -> str | None:
+    """Deny every live provider request until intended use rights are documented."""
+    return authorization_error(load_policy())
+
+
 def _record(ledger: Path, request_id: str, result_file: Path, envelope: dict[str, Any]) -> str:
     _write(result_file, envelope)
     completed = subprocess.run([sys.executable, str(ROOT / "scripts/control_plane/fin_data_request_gate.py"),
@@ -163,6 +169,9 @@ def invoke(endpoint: str, deployment_id: str, ledger: Path, capability_id: str,
     configured = _read(ROOT / "config/source-capabilities/fin-data.json")["runtime"]
     if endpoint != configured:
         return {"transport_error": "configured_endpoint_identity_mismatch", "endpoint": endpoint}
+    use_authorization_error = _provider_use_authorization_error()
+    if use_authorization_error:
+        return {"transport_error": f"runtime_authorization_denied:{use_authorization_error}", "endpoint": endpoint}
     authorization_error = _wire_authorization_error(capability_id, tool_name, method, params)
     if authorization_error:
         return {"transport_error": f"runtime_authorization_denied:{authorization_error}"}

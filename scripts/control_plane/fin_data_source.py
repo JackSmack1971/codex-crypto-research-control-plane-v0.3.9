@@ -17,6 +17,9 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts" / "control_plane"))
 from common import digest, parse_timestamp, write_new_json  # noqa: E402
+from fin_data_use_authorization import (authorization_error as use_authorization_error,
+                                        evidence_binding_authorized, load_policy as load_use_authorization,
+                                        policy_digest as use_authorization_digest)  # noqa: E402
 from source_evidence import expected_manifest_id, validate_source_manifest  # noqa: E402
 
 
@@ -303,8 +306,16 @@ def _evaluate_qualification(snapshot: dict[str, Any], capabilities: dict[str, An
         overall = "QUALIFIED"
     source = next(item for item in _read(ROOT / "config/source-registry.json")["sources"]
                   if item["source_id"] == "fin_data_mcp_render_prod")
+    use_authorization = load_use_authorization()
+    use_authorized = use_authorization_error(use_authorization) is None
+    use_authorization_status = ("AUTHORIZED" if use_authorized else
+                                use_authorization.get("status", "BLOCKED_PENDING_RIGHTS_CONFIRMATION"))
+    if use_authorization_status == "AUTHORIZED" and not use_authorized:
+        use_authorization_status = "DENIED"
     if endpoint_status != "AVAILABLE" or any(item["severity"] == "BLOCKING" and item["status"] != "QUALIFIED"
                                                for item in evaluated.values()):
+        health_severity = "BLOCKING"
+    elif not use_authorized:
         health_severity = "BLOCKING"
     elif overall != "QUALIFIED":
         health_severity = "DEGRADED"
@@ -316,6 +327,10 @@ def _evaluate_qualification(snapshot: dict[str, Any], capabilities: dict[str, An
             "deployment_id": deployment, "endpoint_url": expected_url,
             "observed_endpoint_url": snapshot.get("endpoint_url"),
             "capabilities": evaluated, "health_severity": health_severity, "fallback": "NONE",
+            "runtime_authorization": {"status": use_authorization_status,
+                                      "reason": (use_authorization.get("reason") if use_authorized else
+                                                 use_authorization_error(use_authorization)),
+                                      "policy_digest": use_authorization_digest(use_authorization)},
             "snapshot_digest": digest({k: v for k, v in snapshot.items() if k != "qualification_report"}),
             "capability_policy_digest": digest(capabilities),
             "response_contract_policy_digest": digest(contract_registry)}
@@ -469,6 +484,7 @@ def build_manifest(snapshot: dict[str, Any], capability: dict[str, Any], run_id:
     if response_contract is not None and response_contract != registered_contract:
         raise ValueError("fin_data_response_contract_not_registered")
     response_contract = registered_contract if registered_contract and registered_contract.get("status") == "REGISTERED" else None
+    use_authorization = load_use_authorization()
     rows = normalize_result(result, cid) if isinstance(result, dict) and response_contract else []
     raw_digest = digest(result) if isinstance(result, dict) else None
     normalized_digest = digest(rows)
@@ -483,6 +499,8 @@ def build_manifest(snapshot: dict[str, Any], capability: dict[str, Any], run_id:
                      and report.get("endpoint_url") == snapshot.get("endpoint_url")
                      and report.get("deployment_id") == snapshot.get("deployment_id")
                      and cap_report.get("status") == "QUALIFIED" and cap_report.get("admitted") is True
+                     and evidence_binding_authorized(use_authorization,
+                                                     snapshot.get("verified_request_ledger", {}), report)
                      and report.get("ledger_digest") == snapshot.get("verified_request_ledger", {}).get("content_digest")
                      and not _verify_ledger(snapshot.get("verified_request_ledger", {}))
                      and registered_capability.get("admission") == "ADMITTED"
@@ -511,7 +529,14 @@ def build_manifest(snapshot: dict[str, Any], capability: dict[str, Any], run_id:
     elif snapshot.get("reachability") in {"FAILED", "COLD", "UNAVAILABLE"}:
         manifest_status, availability, reason = "UNAVAILABLE", "UNAVAILABLE", "endpoint_unreachable_or_cold"
     elif snapshot.get("reachability") == "SUCCEEDED":
-        manifest_status, availability, reason = "DEGRADED", "AVAILABLE", "fin_data_capability_not_qualified"
+        manifest_status, availability = "DEGRADED", "AVAILABLE"
+        if use_authorization_error(use_authorization):
+            reason = "provider_use_authorization_blocked"
+        elif not evidence_binding_authorized(use_authorization,
+                                              snapshot.get("verified_request_ledger", {}), report):
+            reason = "provider_use_authorization_binding_missing_or_changed"
+        else:
+            reason = "fin_data_capability_not_qualified"
     else:
         manifest_status, availability, reason = "BLOCKED", "UNKNOWN", "endpoint_reachability_unverified"
     source = next(item for item in _read(ROOT / "config/source-registry.json")["sources"]
