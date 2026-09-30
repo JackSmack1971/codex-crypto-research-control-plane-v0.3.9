@@ -176,6 +176,8 @@ Executed `python -m unittest discover -s tests -p 'test_fin_data*.py' -v` (19 pa
 
 **Independent-review correction (2026-09-30):** Review found that a caller could backdate qualification `now` before a bound response receipt or sealed-ledger completion. Qualification now blocks any representative response received after its report time and fails the whole report closed when any ledger call completed after that time (or has invalid completion time). Added regressions for both conditions. The current 04:00:11Z qualification report remains valid because its bound receipts and ledger completions precede that time. Fresh independent re-review confirms the correction is sound and reports no remaining code finding. Instrument discovery, admission, cutoff eligibility, basis comparability, and provider terms remain blockers, so PR #2 stays unmerged.
 
+**Current PR record (2026-09-30):** Draft [PR #2](https://github.com/JackSmack1971/codex-crypto-research-control-plane-v0.3.9/pull/2), branch `feat/fin-data-governed-evidence`, current reviewed head `c59dc1ad6d12f4ead9564dff58f0b951a9cb13d8`. Independent review found no remaining code finding; local verification passes 97 tests plus control-plane and eval validators. GitHub reports no configured status checks. **Merged commit: none.** The PR remains unmerged because the production evidence/admission blockers above are unsatisfied.
+
 ### Slice 6 — Governed derivatives and positioning evidence
 
 - **Owning plane:** source acquisition, temporal semantics, and evidence admissibility.
