@@ -5,10 +5,10 @@ sys.dont_write_bytecode = True
 from common import digest, write_new_json
 from source_evidence import validate_source_manifest
 
-def build(paths: list[Path], run_id: str, attempt_id: str, cutoff: str, root: Path) -> dict:
+def build(paths: list[Path], run_id: str, attempt_id: str, cutoff: str, root: Path, registry: dict | None = None) -> dict:
     members=[]; seen=set()
     for raw in paths:
-        path=raw.resolve(); obj=json.loads(path.read_text(encoding="utf-8")); errors=validate_source_manifest(obj)
+        path=raw.resolve(); obj=json.loads(path.read_text(encoding="utf-8")); errors=validate_source_manifest(obj,registry)
         if errors: raise ValueError(f"{path}:"+";".join(errors))
         source=obj["source"]["source_id"]
         if source in seen: raise ValueError(f"duplicate_source_identity:{source}")

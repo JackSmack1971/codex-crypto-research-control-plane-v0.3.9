@@ -6,8 +6,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from common import canonical_bytes, digest, parse_timestamp
+from common import digest, parse_timestamp, validate_daily_cutoff_contract
 from validate_artifact import validate as validate_schema
+from validate_sources import identity_payload
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -21,7 +22,13 @@ def without_digest(obj: dict[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in obj.items() if key != "content_digest"}
 
 
-def validate_source_manifest(obj: dict[str, Any]) -> list[str]:
+def _load_registry(registry: dict[str, Any] | None) -> dict[str, Any]:
+    if registry is not None:
+        return registry
+    return json.loads((ROOT / "config" / "source-registry.json").read_text(encoding="utf-8"))
+
+
+def validate_source_manifest(obj: dict[str, Any], registry: dict[str, Any] | None = None) -> list[str]:
     errors: list[str] = _schema_errors(obj, "source_acquisition_manifest.schema.json", "manifest")
     for key in ("manifest_id", "run_id", "attempt_id", "created_at", "research_cutoff", "source", "capability_id", "status", "datasets", "content_digest"):
         if key not in obj:
@@ -35,9 +42,20 @@ def validate_source_manifest(obj: dict[str, Any]) -> list[str]:
             errors.append(f"manifest.source_missing:{key}")
     if obj.get("capability_id") not in source.get("capability_ids", []):
         errors.append("manifest.capability_identity_mismatch")
-    identity = {"source_id": source.get("source_id"), "provider": source.get("provider"), "runtime": source.get("runtime"), "transport": source.get("transport"), "adapter_id": source.get("adapter_id"), "adapter_version": source.get("adapter_version"), "capability_ids": source.get("capability_ids")}
+    identity = identity_payload(source)
     if source.get("identity_digest") != digest(identity):
         errors.append("manifest.source_identity_digest_mismatch")
+    try:
+        registered = {item["source_id"]: item for item in _load_registry(registry).get("sources", [])}
+        trusted = registered.get(source.get("source_id"))
+        if trusted is None:
+            errors.append("manifest.source_not_registered")
+        elif trusted != {**identity, "identity_digest": source.get("identity_digest")}:
+            errors.append("manifest.source_registry_identity_mismatch")
+        elif obj.get("capability_id") not in trusted.get("capability_ids", []):
+            errors.append("manifest.capability_not_registered_for_source")
+    except (OSError, json.JSONDecodeError, KeyError, TypeError) as exc:
+        errors.append(f"manifest.source_registry_invalid:{exc}")
     if obj.get("discovery_status") not in {"DISCOVERED", "NOT_DISCOVERED", "UNKNOWN"}:
         errors.append("manifest.invalid_discovery_status")
     if obj.get("availability_status") not in {"AVAILABLE", "UNAVAILABLE", "UNKNOWN"}:
@@ -50,8 +68,15 @@ def validate_source_manifest(obj: dict[str, Any]) -> list[str]:
         errors.append("manifest.invalid_status")
     if obj.get("status") == "DEGRADED" and not obj.get("degradation_reason"):
         errors.append("manifest.degraded_reason_required")
+    if obj.get("status") == "UNAVAILABLE" and not obj.get("degradation_reason"):
+        errors.append("manifest.unavailable_reason_required")
     if obj.get("availability_status") == "UNAVAILABLE" and any(isinstance(d, dict) and d.get("evidence_role") == "RESEARCH_INPUT" for d in obj.get("datasets", [])):
         errors.append("manifest.unavailable_source_has_research_input")
+    has_research = any(isinstance(d, dict) and d.get("evidence_role") == "RESEARCH_INPUT" for d in obj.get("datasets", []))
+    if has_research and obj.get("availability_status") != "AVAILABLE":
+        errors.append("manifest.research_input_source_not_available")
+    if has_research and obj.get("discovery_status") != "DISCOVERED":
+        errors.append("manifest.research_input_source_not_discovered")
     if obj.get("qualification") != "QUALIFIED" and any(isinstance(d, dict) and d.get("evidence_role") == "RESEARCH_INPUT" for d in obj.get("datasets", [])):
         errors.append("manifest.unqualified_source_has_research_input")
     if obj.get("admissibility") != "ADMITTED" and any(isinstance(d, dict) and d.get("evidence_role") == "RESEARCH_INPUT" for d in obj.get("datasets", [])):
@@ -63,7 +88,8 @@ def validate_source_manifest(obj: dict[str, Any]) -> list[str]:
             errors.append("manifest.research_cutoff_must_be_utc")
         if created.utcoffset() is None:
             errors.append("manifest.created_at_must_be_timezone_aware")
-    except ValueError as exc:
+        errors.extend(validate_daily_cutoff_contract(obj.get("run_id", ""), obj.get("research_cutoff", ""), "EXCLUSIVE_UTC_BOUNDARY", "manifest"))
+    except (ValueError, TypeError, AttributeError) as exc:
         errors.append(str(exc)); cutoff = None
     datasets = obj.get("datasets")
     if not isinstance(datasets, list):
@@ -85,9 +111,14 @@ def validate_source_manifest(obj: dict[str, Any]) -> list[str]:
             errors.append(f"{label}.invalid_evidence_role")
         if ds.get("evidence_role") == "RESEARCH_INPUT" and (ds.get("admissibility") != "ADMITTED" or ds.get("qualification") != "QUALIFIED"):
             errors.append(f"{label}.research_input_not_qualified_and_admitted")
+        if ds.get("evidence_role") == "RESEARCH_INPUT" and (ds.get("pagination_complete") is not True or ds.get("status") != "COMPLETE"):
+            errors.append(f"{label}.research_input_incomplete")
         if cutoff is not None:
             try:
                 observed = parse_timestamp(ds.get("observed_at", ""), f"{label}.observed_at")
+                if observed.utcoffset() is None:
+                    errors.append(f"{label}.observed_at_must_be_timezone_aware")
+                    continue
                 if observed >= cutoff: errors.append(f"{label}.observation_at_or_after_cutoff")
                 max_age = ds.get("max_age_seconds")
                 if isinstance(max_age, int) and cutoff is not None and (cutoff-observed).total_seconds() > max_age:
@@ -95,15 +126,17 @@ def validate_source_manifest(obj: dict[str, Any]) -> list[str]:
                 freshness = ds.get("freshness_seconds")
                 if isinstance(freshness, int) and cutoff is not None and freshness != int((cutoff-observed).total_seconds()):
                     errors.append(f"{label}.freshness_metadata_mismatch")
-            except ValueError as exc: errors.append(str(exc))
+            except (ValueError, TypeError, AttributeError) as exc: errors.append(str(exc))
         if ds.get("status") == "UNAVAILABLE" and ds.get("evidence_role") == "RESEARCH_INPUT":
             errors.append(f"{label}.unavailable_cannot_be_research_input")
+        if obj.get("status") == "COMPLETE" and ds.get("status") != "COMPLETE":
+            errors.append(f"{label}.noncomplete_dataset_in_complete_manifest")
     if obj.get("content_digest") != digest(without_digest(obj)):
         errors.append("manifest.content_digest_mismatch")
     return errors
 
 
-def validate_bundle(bundle: dict[str, Any], base: Path) -> list[str]:
+def validate_bundle(bundle: dict[str, Any], base: Path, registry: dict[str, Any] | None = None) -> list[str]:
     errors: list[str] = _schema_errors(bundle, "evidence_bundle.schema.json", "bundle")
     for key in ("bundle_id", "run_id", "attempt_id", "research_cutoff", "members", "content_digest"):
         if key not in bundle: errors.append(f"bundle.missing:{key}")
@@ -113,7 +146,8 @@ def validate_bundle(bundle: dict[str, Any], base: Path) -> list[str]:
         cutoff = parse_timestamp(bundle.get("research_cutoff", ""), "bundle.research_cutoff")
         if cutoff.utcoffset() is None or cutoff.utcoffset().total_seconds() != 0:
             errors.append("bundle.research_cutoff_must_be_utc")
-    except ValueError as exc:
+        errors.extend(validate_daily_cutoff_contract(bundle.get("run_id", ""), bundle.get("research_cutoff", ""), "EXCLUSIVE_UTC_BOUNDARY", "bundle"))
+    except (ValueError, TypeError, AttributeError) as exc:
         errors.append(str(exc))
     members = bundle.get("members", [])
     if not isinstance(members, list): return errors + ["bundle.members_must_be_list"]
@@ -133,7 +167,7 @@ def validate_bundle(bundle: dict[str, Any], base: Path) -> list[str]:
             manifest = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
             errors.append(f"{label}.manifest_unreadable:{exc}"); continue
-        errors.extend(validate_source_manifest(manifest))
+        errors.extend(validate_source_manifest(manifest, registry))
         if manifest.get("manifest_id") != member.get("manifest_id"):
             errors.append(f"{label}.manifest_identity_mismatch")
         if manifest.get("source", {}).get("source_id") != sid:
