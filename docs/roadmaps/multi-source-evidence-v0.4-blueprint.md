@@ -1,0 +1,281 @@
+# v0.4 Multi-Source Evidence Plane Blueprint
+
+**Status:** implementation blueprint; no v0.4 slice is implemented by this document.
+
+**Baseline:** repository release `0.3.9`, `VERSION`, `docs/architecture.md`, and the committed deterministic control plane.
+**Target:** an additive, source-neutral evidence plane that can govern independently qualified providers and produce one immutable, temporally bounded `EvidenceBundle` for deterministic research.
+
+## Purpose and baseline
+
+v0.3.9 has a working Massive MCP acquisition path: configured capabilities and a Massive request ledger feed canonical JSONL materialization, the Massive-specific `schemas/massive_acquisition_manifest.schema.json` seals source evidence, `reconcile_materializations.py` checks manifest/materialization agreement, and `scripts/pipeline/run_daily_pipeline.py` verifies digest-bound files before calculating features, ranks, market state, research-only weights, and forecast payloads. `freeze_forecast.py`, promotion, scorekeeping, and their records are immutable code-owned transitions. The existing daily schema and capability evaluator know `CORE`, `ENRICHMENT`, and `EVENT_OPTIONAL`; pipeline inputs are explicit Massive-era paths. The external source plane is configured as Massive MCP in `.codex/config.toml`.
+
+The v0.4 design adds source-neutral identities and composition around that machinery. It does not discard or rewrite historical v0.3.9 artifacts. Massive remains a first-class adapter and compatibility reader. The target is reached only when the same fixed evidence bundle can be verified and consumed regardless of which qualified provider supplied each declared feature input.
+
+## Invariants for every slice
+
+1. Model reasoning, MCP output, provider status, agent recommendations, and review prose are evidence only. Deterministic code validates and writes every durable state transition.
+2. Availability, trust, and admissibility are separate: reachable does not mean qualified; qualified does not make every record admissible; admissibility is decided against source, dataset, purpose, time, quality, and declared dependency policy.
+3. No silent source fallback, cross-source substitution, or source blending. A selected source/dataset identity is frozen before results are inspected. Any substitution is explicit, policy-authorized, independently represented, and visible in the bundle and degradation state.
+4. No live-trading, order, brokerage, exchange-account, collateral-movement, or execution authority is introduced. Portfolio outputs remain research-only.
+5. Calculation, joins, ranking, risk constraints, persistence, content hashing, seals, and state transitions remain deterministic and repository-code owned.
+6. A run's information set is fixed at the exclusive `research_cutoff`. Effective observations at or after it are inadmissible. Retrieval time, publication time, effective time, revisions, and availability time are distinct fields where the source exposes them. No later lookup is silently incorporated.
+7. Existing immutable Massive manifests, forecast IDs/digests, candidate state, and OOS outcomes remain readable and unmodified. Schema evolution is versioned and explicit.
+8. External text is untrusted data, never executable instruction. Sanitization reduces attack surface but does not establish truth, provenance, or admissibility.
+9. A CORE failure is blocking only for the registered product/feature contract that declares that capability CORE. Other requirement classes degrade only their declared scope; absence is not interpreted as neutral evidence.
+
+## Target architecture and terms
+
+The target acquisition path is:
+
+```text
+source registry + qualification snapshot
+              |
+source adapters -> immutable source-specific acquisition manifests
+              |                         |
+canonical instrument map          immutable datasets
+              \                         /
+        deterministic manifest verification and reconciliation
+                              |
+          EvidenceBundle (member manifest IDs + digests + cutoff)
+                              |
+feature/source dependency policy -> deterministic pipeline
+                              |
+ research risk -> immutable shadow portfolio/NAV -> frozen forecast
+```
+
+- **Source identity**: stable source ID, provider, access plane/server identity, adapter contract/version, and trust/qualification policy identity. It is not a URL alone or a claim of quality.
+- **Qualification**: a dated, evidence-backed record for endpoint discovery, stated entitlement, actual authenticated access, pagination/completeness, retention/revision behavior, temporal fields, stable IDs, limitations, and test results. Qualification expires or is invalidated by material contract changes. It is not an investment view.
+- **Source manifest**: immutable, versioned provenance and dataset digest record for one source acquisition, attempt, cutoff, and source identity. The v0.3.9 Massive schema remains the v1 Massive-specific contract.
+- **EvidenceBundle**: immutable deterministic composition of exact qualified source-manifest identities/digests, exact dataset identities/digests, canonical identity-map version, cutoff semantics, dependency-policy version, qualification snapshot IDs, and explicit coverage/degradation. Its digest is domain-separated and computed from canonical serialized content with a documented field-order/normalization algorithm.
+- **Requirement classes**: `CORE`, `ENRICHMENT`, `ASSET_OPTIONAL`, `EVENT_OPTIONAL`. Classification attaches to a capability/dataset in a registered run or feature contract, not to a provider globally. Independent class evaluation is reported per source and dependency; optional evidence cannot silently backfill another class.
+- **Feature/source dependency declaration**: versioned deterministic mapping from each feature/result field to acceptable source dataset IDs, identity/time requirements, qualification requirements, transformation version, and behavior on missing/invalid evidence.
+
+The exact Fin Data MCP endpoints, field semantics, historical depth, usage limits, stable identifiers, redistribution/storage terms, and macro/derivatives coverage are **unknown until the provider’s current MCP catalog and authenticated behavior are examined in its implementation slice**. Do not write those assumptions into code or classify any data CORE by default.
+
+## Ordered implementation slices
+
+Slices are ordered by dependency. Each is separately reviewable and mergeable after its prerequisites land. Within each slice the listed artifacts and acceptance checks are the completion boundary. A slice must not claim completion from prose alone: code, schemas, fixtures, tests/evals, and executed results must exist. New schemas use the repository's existing JSON Schema and `validate_artifact.py` conventions; Windows Python entry points continue through bootstrap-bound `run_python.cmd` wrappers. Never use provider credentials in tests.
+
+### Slice 1 — Source identity registry and qualification records
+
+- **Owning plane:** policy and acquisition governance.
+- **Rationale:** present source identity is embedded in Massive-specific configuration/schema, so independent source trust and identity cannot be compared or invalidated deterministically.
+- **Dependencies:** none; preserve current Massive contract as baseline.
+- **Intended artifacts/components:** `schemas/source_registry.schema.json`; `schemas/source_qualification.schema.json`; `config/source-registry.json` containing the Massive MCP identity and a disabled/unqualified Fin Data MCP placeholder only if its connection identity is known; `research/sources/README.md`; `scripts/control_plane/validate_sources.py`; source identity/version types in `scripts/control_plane/source_registry.py`.
+- **Invariants:** registry IDs stable and provider-neutral; qualification snapshot immutable and time-bound; discovery, entitlement assertion, authenticated access, data quality, and admissibility separate; secrets/credentials absent; unqualified entries cannot be used as research inputs.
+- **Acceptance criteria:** duplicate IDs, source identity mutation under an existing ID, expired qualification, unknown adapter version, and qualification without observed evidence fail deterministically; a valid Massive entry points to the existing server and schema without changing existing manifest bytes.
+- **Required tests/evals:** schema positive/negative fixtures; canonical ID uniqueness; qualification expiry/invalidation; no-secret scan; check that reachability alone cannot set `QUALIFIED`; compatibility fixture copied from a v0.3.9 Massive manifest validates unchanged.
+- **Migration/compatibility:** keep `config/daily-capabilities.json` and Massive checks authoritative for v0.3.9 runs; registry is initially a parallel identity layer, not a replacement.
+- **Non-goals:** fetching Fin data; provider reliability scoring; auto-qualification; changing CORE status.
+
+### Slice 2 — Source-specific immutable acquisition-manifest envelope
+
+- **Owning plane:** durable data plane.
+- **Rationale:** one Massive-specific manifest cannot express other provider contracts without lying about source identity or weakening provenance.
+- **Dependencies:** Slice 1.
+- **Intended artifacts/components:** `schemas/source_acquisition_manifest.schema.json` as a versioned common envelope with source-specific `adapter_payload`; `schemas/fin_data_acquisition.schema.json` only when its contract is observed; `scripts/control_plane/seal_source_acquisition.py`; `scripts/control_plane/validate_source_manifest.py`; source-scoped manifest paths under `research/acquisitions/<run>/<attempt>/<source-id>/`.
+- **Invariants:** create-once; immutable digest covers canonical manifest content and dataset references; each dataset retains retrieval/effective/publication/availability times as available, query/endpoint identity, pagination completion, row count, key contract, raw/normalized digest, evidence role, and explicit limitations; partial/diagnostic data cannot masquerade as complete research input.
+- **Acceptance criteria:** deterministic resealing yields the same ID/digest; attempted rewrite fails; dataset digest/count/key mismatch blocks sealing; unknown source adapter payload fails closed; the existing Massive sealer continues producing its current schema until an explicit compatibility adapter is qualified.
+- **Required tests/evals:** schema contract fixtures for complete/degraded/partial/blocked; tampering, duplicate datasets, pagination truncation, post-cutoff rows, and diagnostic-as-input rejection; immutability tests.
+- **Migration/compatibility:** retain `schemas/massive_acquisition_manifest.schema.json` and existing artifacts. Introduce a deterministic read-only wrapper that can reference a legacy Massive manifest by its original digest; never rewrite it into a new digest and claim identity equivalence.
+- **Non-goals:** multi-source composition, feature calculations, provider fallback.
+
+### Slice 3 — EvidenceBundle identity, digest, seal, and read-only legacy bridge
+
+- **Owning plane:** durable data plane and run identity.
+- **Rationale:** individually sealed acquisitions do not yet identify the exact cross-source information set a pipeline consumed.
+- **Dependencies:** Slices 1–2.
+- **Intended artifacts/components:** `schemas/evidence_bundle.schema.json`; `schemas/evidence_bundle_member.schema.json`; `scripts/control_plane/build_evidence_bundle.py`; `scripts/control_plane/seal_evidence_bundle.py`; `scripts/control_plane/verify_evidence_bundle.py`; `research/bundles/` layout; `docs/evidence-bundle-contract.md` specifying canonical JSON, digest domain/separator, ordering, null handling, and digest exclusion rules.
+- **Invariants:** bundle identity binds run/attempt, exclusive cutoff, source manifest IDs and digests, qualification snapshot IDs/digests, dataset IDs/digests, canonical identity-map version, policy versions, and per-requirement coverage; no member can be added/replaced after seal; old manifest immutability remains intact.
+- **Acceptance criteria:** same ordered semantic member set yields same canonical digest independent of filesystem enumeration; altered source manifest, qualification, dataset, mapping version, cutoff, or dependency policy changes the bundle digest; post-seal mutation rejected; verifier reconstructs and checks every member without provider access.
+- **Required tests/evals:** golden digest vectors; permutation/order canonicalization tests; tamper and duplicate-member cases; exclusive-cutoff boundary cases; replay of a v0.3.9 acquisition via the legacy bridge.
+- **Migration/compatibility:** v0.3.9 run identity remains `run_id=<date>-eod` and attempt IDs remain fresh; the bundle is a new parent identity, never an overwrite of the acquisition or forecast.
+- **Non-goals:** treating bundle inclusion as proof of trust; changing forecast freeze requirements yet.
+
+### Slice 4 — Canonical asset and instrument identity
+
+- **Owning plane:** data semantics and deterministic normalization.
+- **Rationale:** Massive ticker strings cannot safely join provider-specific spot, perpetual, dated futures, options, equity proxies, protocols, pools, and network entities.
+- **Dependencies:** Slice 1; Slice 2 for manifest binding.
+- **Intended artifacts/components:** `schemas/instrument_identity.schema.json`; `schemas/instrument_mapping.schema.json`; `config/instrument-identities/` versioned mapping seed; `scripts/control_plane/normalize_instruments.py`; `scripts/control_plane/validate_instrument_map.py`; identity fixtures in `tests/fixtures/instruments/`.
+- **Invariants:** distinguish asset, venue instrument, contract, quote currency, chain/token, protocol, pool, and proxy; preserve provider-native IDs and symbols; effective-dated mappings are bitemporal where history/revisions matter; ambiguous or many-to-one mappings do not auto-join; no ticker-only equivalence inference.
+- **Acceptance criteria:** all v0.3.9 crypto universe/history rows map to stable canonical IDs or are explicitly excluded with reason; adversarial symbol collisions resolve to separate identities; map digest/version enters bundle and downstream outputs; stale or overlapping conflicting map intervals fail.
+- **Required tests/evals:** known alias mappings; ticker collision tests; quote/contract/chain distinction; map interval overlap; unknown-identity quarantine; no look-ahead in effective-dated mapping.
+- **Migration/compatibility:** keep legacy `ticker` fields for readers during migration and add `instrument_id`; new pipeline version must declare which field is authoritative. Frozen historical forecasts are never backfilled or rewritten.
+- **Non-goals:** asserting economic fungibility or equivalent liquidity across venues; resolving every chain token.
+
+### Slice 5 — Fin Data MCP as second primary source
+
+- **Owning plane:** external acquisition adapter and source qualification.
+- **Rationale:** prove the source-neutral contracts against an independent MCP primary source before adding many specialized feeds.
+- **Dependencies:** Slices 1–4. Fin Data remains `UNQUALIFIED` until all qualification evidence is recorded.
+- **Intended artifacts/components:** `.codex/config.toml` Fin Data MCP connection entry only after its official server identity/transport is verified; `.agents/skills/fin-data-mcp/` operating guidance only if a reusable governed acquisition workflow is needed; `scripts/control_plane/providers/fin_data_mcp.py`; `schemas/fin_data_request.schema.json`; `schemas/fin_data_result.schema.json`; `config/source-capabilities/fin-data.json`; `tests/fixtures/providers/fin-data/`; qualification report under `research/sources/`.
+- **Invariants:** use the provider's documented MCP plane; no direct HTTP/API key bypass; provider-call governance covers Fin calls with its own endpoint/operation policy and attempt ledger (never pretend the Massive ledger covers it); exact calls, pagination, actual access, terms, timestamps, and field semantics are recorded; no source is selected because it agrees with Massive.
+- **Acceptance criteria:** endpoint/schema discovery and authenticated read-only calls pass against a test or explicitly bounded qualification attempt; responses fully paginate or report truncation; source-specific manifest validates and seals; all records meet cutoff and canonical mapping or carry explicit exclusions; qualification report identifies supported domains, known gaps, entitlement behavior, stability/version, usage terms, and reproducible tests. If any cannot be observed, keep adapter disabled and mark slice blocked rather than claim a qualified second source.
+- **Required tests/evals:** fixture-driven contract tests; adapter pagination and warning/rate-limit handling; schema drift fails closed; absent/denied/malformed MCP behavior; sanitization hooks for all returned text; qualification eval against observed contract; no-network unit tests.
+- **Migration/compatibility:** Massive remains the only source for legacy workflows until source-specific qualification and downstream dependency policy explicitly admit Fin. No source priority/fallback is implied by “second primary.”
+- **Non-goals:** assume Fin provides any specific asset class, historical depth, market, macro series, derivatives, chain data, or stable ID; trade execution; silent Massive substitution.
+
+### Slice 6 — Governed derivatives and positioning evidence
+
+- **Owning plane:** source acquisition, temporal semantics, and evidence admissibility.
+- **Rationale:** funding, open interest, liquidations, basis, options, and venue positioning may inform risk but are contract- and venue-specific and prone to incomparable timestamps/definitions.
+- **Dependencies:** Slices 1–5; a provider can be Massive, Fin, or a separately qualified MCP source, but its actual capability is unknown until observed.
+- **Intended artifacts/components:** `config/source-capabilities/derivatives.json`; `schemas/derivatives_observation.schema.json`; provider adapters and source-specific manifests under Slice 2; `docs/derivatives-evidence-contract.md`; explicit event/interval metadata and venue/instrument IDs.
+- **Invariants:** distinguish reported, estimated, aggregated, and reconstructed measures; preserve venue coverage, units, interval, contract type, snapshot/publication/effective time and revision; no aggregation across incompatible contracts/venues without a versioned deterministic definition; stale/corrected values visible.
+- **Acceptance criteria:** each admitted metric has a source-qualified field dictionary, coverage and timestamp contract, reproducible fixture, cutoff test, and explicit missing behavior; no metric is consumed by pipeline before a feature dependency admits it.
+- **Required tests/evals:** unit conversion, interval alignment, revision replay, stale-data, venue omission, missingness, contract mismatch, liquidation sign convention, and lookahead tests; fixture-based source-adapter eval.
+- **Migration/compatibility:** all new datasets default `EVENT_OPTIONAL` or `ASSET_OPTIONAL` per registered use, never CORE globally; existing EOD feature outputs stay unchanged until a later versioned feature definition uses them.
+- **Non-goals:** treat exchange open interest as total market positioning; infer ETF, fund, wallet, or institutional flows without direct admitted evidence; trade on raw headlines.
+
+### Slice 7 — Cross-source reconciliation and feature-to-source dependency declarations
+
+- **Owning plane:** deterministic evidence reconciliation and pipeline contract.
+- **Rationale:** bundle membership alone does not state which source is admissible for a calculation, nor how conflicting observations should be handled.
+- **Dependencies:** Slices 1–6.
+- **Intended artifacts/components:** `schemas/feature_source_dependency.schema.json`; `config/feature-source-dependencies.json`; `scripts/control_plane/reconcile_evidence.py`; `scripts/control_plane/resolve_feature_inputs.py`; dependency metadata added to pipeline result, feature store, and forecast schemas.
+- **Invariants:** feature ID/version names exact required and permitted source datasets, qualification level, canonical identity, units, timestamp/age, revision policy, aggregation, missingness, and conflict policy; observed disagreement is preserved; reconciliation never averages away conflict or chooses a convenient source after outcome inspection.
+- **Acceptance criteria:** every deterministic feature/risk/forecast field consumed from external data has a declared dependency or is explicitly model/config-derived; resolver returns exact dataset-manifest-digest provenance; missing/ambiguous/conflicting inputs produce declared status and cannot silently map to another field/source; output is reproducible from the bundle offline.
+- **Required tests/evals:** conflicting-source fixtures; same-source duplicates; differing frequency and units; forbidden source substitution; undeclared feature fails; dependency version drift changes bundle/run identity; deterministic replay.
+- **Migration/compatibility:** create a v0.3.9 dependency map matching current Massive-only inputs and demonstrate byte-stable legacy feature outputs under the compatibility mode before enabling generalized inputs.
+- **Non-goals:** model-based source selection; consensus averaging unless preregistered as a deterministic transform; causal adjudication of provider disagreement.
+
+### Slice 8 — Independent requirement-class degradation
+
+- **Owning plane:** source capability policy and daily orchestration.
+- **Rationale:** existing evaluator cannot classify `ASSET_OPTIONAL` or evaluate independent source/capability states without letting one source's failure mask another's.
+- **Dependencies:** Slices 1–7.
+- **Intended artifacts/components:** versioned replacement/extension `config/evidence-capabilities.json`; updated `schemas/capability_evaluation.schema.json`; `scripts/control_plane/evaluate_evidence_capabilities.py`; `schemas/evidence_coverage.schema.json`; daily orchestration workflow/skill updates after implementation; structure/eval cases per capability.
+- **Invariants:** evaluate each `(source_id, capability_id, dataset_id, requirement)` independently across discovery, declared entitlement, authenticated access, completeness, freshness, qualification, and admissibility; `CORE`, `ENRICHMENT`, `ASSET_OPTIONAL`, `EVENT_OPTIONAL` semantics are explicit; unrelated source failure does not erase valid coverage; required CORE failure blocks only dependent product/features; optional absence never becomes zero/neutral.
+- **Acceptance criteria:** every class has deterministic complete/degraded/block behavior; source-level and feature-level coverage are both emitted; no global COMPLETE when required dependency is missing; degraded outputs list exact downstream consequences; existing three-class Massive evaluation fixtures retain expected status in compatibility mode.
+- **Required tests/evals:** all-class truth table; mixed-source independent failures; source unavailable versus no event; access denied versus incomplete versus stale; unqualified-but-reachable; CORE-dependency propagation and unrelated CORE isolation.
+- **Migration/compatibility:** preserve old `capability_evaluation` schema reader or version field; do not reinterpret legacy EVENT_OPTIONAL datasets as ASSET_OPTIONAL.
+- **Non-goals:** invent thresholds for freshness, source trust, risk, or quality; downgrade a required dependency automatically.
+
+### Slice 9 — External-text sanitization and prompt-injection containment
+
+- **Owning plane:** ingestion security, agent context boundary, and auditability.
+- **Rationale:** filings, news, protocol descriptions, and provider text can contain hostile instructions or misleading claims.
+- **Dependencies:** Slices 1–3; implement before agents receive any new external text.
+- **Intended artifacts/components:** `schemas/untrusted_text_record.schema.json`; `scripts/control_plane/sanitize_external_text.py`; `docs/untrusted-evidence-boundary.md`; provider manifest metadata for raw-text digest, sanitized-text digest, sanitizer version, encoding/length limits, and provenance; `tests/fixtures/untrusted-text/`; agent handoff contract update labeling text as untrusted evidence.
+- **Invariants:** preserve raw bytes in access-controlled immutable source evidence where retention policy permits; sanitize into a separate derived artifact; quote/escape/label text, strip active markup and control characters, cap size, redact credentials/PII per policy, bind both digests; never follow instructions embedded in source text; sanitization does not convert assertions into facts.
+- **Acceptance criteria:** deterministic sanitizer produces same output for same version/input; raw and sanitized identities trace to the bundle; injection strings remain inert and visible as quoted data or are safely excluded with reason; audit can recover provenance without exposing secrets in logs.
+- **Required tests/evals:** HTML/markdown/script/control-character/Unicode confusables, hidden text, long payload, malicious instruction corpus, benign financial text preservation, secret-like string handling, and agent-task injection evals.
+- **Migration/compatibility:** existing numerical JSONL does not require text sanitizer; no retroactive rewriting of historical text or handoffs; changing sanitizer version creates a new derived identity.
+- **Non-goals:** semantic truth detection, source reputation from wording, LLM-based sanitization, using sanitization as authorization.
+
+### Slice 10 — DefiLlama integration
+
+- **Owning plane:** qualified protocol/chain evidence adapter.
+- **Rationale:** provide a separately traceable source for protocol/DeFi state only where its definitions and history meet declared research needs.
+- **Dependencies:** Slices 1–9; exact MCP source/server and endpoint availability must be discovered and qualified at execution time. If no documented/authenticated MCP route is available, report the blocker; do not fall back to direct REST.
+- **Intended artifacts/components:** `config/source-capabilities/defillama.json`; `scripts/control_plane/providers/defillama_mcp.py` if reachable through an authorized MCP server; source-specific schema/fixtures; source qualification and acquisition manifests; `docs/defillama-evidence-contract.md` recording metric definitions, chain/protocol identity, revisions, historical depth, update delay, and licensing/retention.
+- **Invariants:** source availability is not trust; TVL/fees/revenue/chain metrics retain definition, unit, protocol/chain scope, observation and publication times, and revisions; never equate TVL with net flows, solvency, user demand, or asset price direction.
+- **Acceptance criteria:** observed endpoint behavior and terms documented; fully paginated or explicitly bounded; point-in-time correctness and canonical protocol/chain mapping verified; dataset can seal into bundle; remains optional until feature dependency explicitly uses it.
+- **Required tests/evals:** fixture schemas, revisions/backfill, chain/protocol aliases, missing/zero distinction, cutoff, stale values, incomplete pagination, MCP unavailable, prohibited direct-network guard.
+- **Migration/compatibility:** no change to crypto CORE; mark asset or event optional according to a specific downstream use, with per-feature status.
+- **Non-goals:** assert data access via an unspecified server; infer flows/causality; source substitution for spot pricing.
+
+### Slice 11 — Primary macro-source integration
+
+- **Owning plane:** cross-asset acquisition and macro feature contract.
+- **Rationale:** v0.3.9 currently models FX/stock/index enrichment paths tied to Massive; a multi-source system needs independently qualified primary macro providers and explicit series semantics.
+- **Dependencies:** Slices 1–9; use Fin only if Slice 5 actually qualifies the needed series; otherwise a separate provider qualification is its own prerequisite.
+- **Intended artifacts/components:** `config/source-capabilities/macro.json`; `schemas/macro_series.schema.json`; qualified MCP adapter; `config/feature-source-dependencies.json` macro entries; `docs/macro-source-contract.md`; fixtures for calendars, revisions, units, and series IDs.
+- **Invariants:** distinguish release/publication time from period/effective time and retrieval time; revisions are bitemporal; calendars, holidays, units, currency base, and series definitions are explicit; no non-crypto source silently fills another series; `ENRICHMENT` absence is visible and cannot be imputed to risk-neutral.
+- **Acceptance criteria:** named required series and source-specific contracts are evidenced; macro features reproduce offline from sealed bundle; first-release versus revised values can be reconstructed as known at cutoff; provider failure yields the exact declared degraded feature state.
+- **Required tests/evals:** publication-lag and revision-vintage replay; market-calendar alignment; currency/unit tests; cutoff/leakage tests; source conflict; unavailable/denied/stale coverage.
+- **Migration/compatibility:** keep existing Massive FX/stock/index outputs available in compatibility mode; version any changed macro definition and forecast identity.
+- **Non-goals:** make any macro series CORE without an explicit product dependency and qualification; claim macro causality or forecast power.
+
+### Slice 12 — Microstructure evidence
+
+- **Owning plane:** market-data acquisition, intraday temporal integrity, and feature research.
+- **Rationale:** v0.3.9 capability boundary explicitly rejects unsupported microstructure claims and the current crypto Basic snapshot excludes trades, snapshots, WebSockets, and flat files; any expansion must be separately qualified and preregistered.
+- **Dependencies:** Slices 1–9; source entitlement/retention and intraday event-time qualification; research hypothesis/validation lifecycle for each proposed feature.
+- **Intended artifacts/components:** `config/source-capabilities/microstructure.json`; `schemas/microstructure_event.schema.json`; a separately qualified MCP adapter and request ledger; `docs/microstructure-evidence-contract.md`; event-time normalization/replay code; registered hypothesis and fixed tests before feature integration.
+- **Invariants:** preserve exchange/venue, instrument, event/receive time, sequence/gap, aggregation window, trade correction/cancel, unit and market coverage; EOD bars are not relabeled as microstructure; no direct REST, websocket, or file path that bypasses provider/data-plane policy; no unsupported market-wide claim from narrow coverage.
+- **Acceptance criteria:** actual entitlement and retention confirmed; replay is deterministic and sequence gaps are surfaced; cost/liquidity impact measured with a registered design; feature has independent validation and methodology audit before it can affect forecasts.
+- **Required tests/evals:** event ordering, duplicate/cancel/correction, dropped sequence, clock skew, window boundaries, venue coverage, truncation, rate-limit handling, no-lookahead, stress-period coverage and pessimistic transaction-cost sensitivity.
+- **Migration/compatibility:** optional diagnostic/research dataset initially; it cannot alter current daily pipeline outputs until a new feature/pipeline version passes validation and promotion governance.
+- **Non-goals:** promise access under current Massive Basic; live execution, order book placement or best-execution claims; post-hoc feature discovery on reserved outcomes.
+
+### Slice 13 — Optional BTC network-state evidence
+
+- **Owning plane:** chain-data acquisition and asset-optional feature research.
+- **Rationale:** network activity may add context but is neither price data nor evidence of exchange flows/ownership absent specific source proof.
+- **Dependencies:** Slices 1–4, 7–9; identify exact chain/node/provider source, finality, reorg, timestamp and historical coverage before qualification.
+- **Intended artifacts/components:** `config/source-capabilities/btc-network.json`; `schemas/network_state_observation.schema.json`; qualified MCP adapter if one exists; `docs/network-evidence-contract.md`; reorg-aware point-in-time materialization; preregistered feature experiment artifacts.
+- **Invariants:** block height/hash, chain, confirmation/finality, event time, observation/retrieval time, reorg handling, entity-label provenance and uncertainty remain explicit; address activity is not labeled as owner identity or exchange flow without qualified entity evidence; absence remains unavailable, not zero.
+- **Acceptance criteria:** reorg/revision replay and cutoff are deterministic; chain metrics map only to BTC asset identity; source coverage and entity-label limits are disclosed; any feature is independently validated before pipeline use.
+- **Required tests/evals:** reorg rollback/replay, block time vs availability time, fork/finality, entity-label revision, coverage gaps, no-lookahead, injection containment for provider text.
+- **Migration/compatibility:** `ASSET_OPTIONAL` for BTC only; its absence cannot block or change other assets' features/risk; any new forecast dependency is explicit.
+- **Non-goals:** assert wallet/ETF/fund flows from on-chain counts; causal claims; silently neutralize missing BTC network evidence.
+
+### Slice 14 — Deterministic portfolio/risk improvements
+
+- **Owning plane:** deterministic research portfolio construction and risk governance.
+- **Rationale:** current `_risk` path scales a score-based gross target by three market states and caps individual research weights; it does not establish portfolio covariance, liquidity capacity, turnover, drawdown, concentration, correlation, or stress controls.
+- **Dependencies:** Slices 3–8; qualified input dependencies, risk policy authority, and reproducible historical data. Any threshold must come from authoritative policy/config, not be invented in code or agent prose.
+- **Intended artifacts/components:** versioned `config/portfolio-risk-policy.json`; `schemas/research_portfolio.schema.json`; `scripts/pipeline/portfolio_risk.py`; `scripts/pipeline/scenario_risk.py`; `schemas/risk_report.schema.json`; `docs/portfolio-risk-contract.md`; deterministic covariance/cost/liquidity/scenario fixtures.
+- **Invariants:** research-only outputs; no execution semantics; risk limits come from approved policy and missing limits fail closed or report policy gap; inputs bind to EvidenceBundle digest; costs, liquidity, concentration, correlation, volatility, drawdown, and scenario assumptions are explicit; no prose agent changes proposal.
+- **Acceptance criteria:** deterministic solver/heuristic obeys all configured constraints or returns BLOCK/INFEASIBLE; stresses include documented scenarios and sensitivity ranges; output reports active constraints, exposure, turnover estimate, input freshness and limitations; replay from sealed inputs is identical.
+- **Required tests/evals:** constraint/property tests; singular/short history; missing correlations; liquidity and concentration caps; transaction-cost/turnover shocks; drawdown and gap scenarios; regime shifts; infeasibility; input digest tampering.
+- **Migration/compatibility:** retain legacy research weights as a named baseline comparator; do not silently change v0.3.9 forecast payloads. New risk engine means new pipeline/config identity and forecast version.
+- **Non-goals:** invent policy thresholds, promise returns, optimize on OOS outcomes, send or stage live orders.
+
+### Slice 15 — Immutable shadow portfolio and NAV
+
+- **Owning plane:** deterministic paper/shadow accounting and immutable performance evidence.
+- **Rationale:** forecasts and proposed weights do not yet define a durable holdings/cash/cost path whose realized NAV can be independently scored.
+- **Dependencies:** Slice 14; forecast freeze identity; explicit accounting, rebalance timing, valuation-source dependencies, fee/slippage/financing rules and research-only governance policy.
+- **Intended artifacts/components:** `schemas/shadow_portfolio.schema.json`; `schemas/shadow_nav_record.schema.json`; `scripts/control_plane/initialize_shadow_portfolio.py`; `scripts/control_plane/mark_shadow_nav.py`; `scripts/control_plane/reconcile_shadow_ledger.py`; immutable `research/shadow-portfolios/` and `research/shadow-nav/`; `docs/shadow-portfolio-accounting.md`.
+- **Invariants:** separate namespace from broker/exchange accounts; code-only append transition with unique sequence and prior-record digest; holdings, cash, corporate actions, rebalance intent, marks, costs and missing marks trace to frozen evidence; never rewrite prior marks; no external account connectivity or orders.
+- **Acceptance criteria:** every NAV change is reproducible from prior sealed ledger, frozen portfolio decision, admitted valuation bundle, and versioned cost/accounting policy; missing mark/stale price produces declared status and no fabricated valuation; restatement is a new linked record with preserved original; immutable forecast/outcome records remain unchanged.
+- **Required tests/evals:** ledger replay, digest chain, duplicate/idempotency, missing/stale mark, delisting/contract migration, fee/slippage, cash reconciliation, timestamp cutoff, corporate-action/restatement handling, explicit no-brokerage/no-network checks.
+- **Migration/compatibility:** shadow series starts at a declared inception and does not synthesize historical NAV from old forecasts; forecast/OOS schemas remain separate and bind to new shadow IDs only prospectively.
+- **Non-goals:** broker/exchange credentials, account state, orders, collateral, auto-rebalance, presenting shadow NAV as live or audited fund NAV.
+
+### Slice 16 — End-to-end qualification, adversarial evals, and immutable replay
+
+- **Owning plane:** system qualification and independent control-plane evaluation.
+- **Rationale:** individual adapter/schema tests do not prove the multi-source information set, failure isolation, injection boundary, deterministic pipeline and immutable ledger compose correctly.
+- **Dependencies:** Slices 1–15 (microstructure and BTC optional slices may remain explicitly unqualified; eval must include their absent states).
+- **Intended artifacts/components:** `evals/multi_source/` fixtures and scenario corpus; `scripts/control_plane/run_evidence_evals.py`; expanded `tests/test_artifact_contracts.py`, `tests/test_immutability.py`, `tests/test_operational_hardening.py`, and `tests/test_structure.py`; independent qualification report schema under `schemas/`; deterministic offline replay command.
+- **Invariants:** fixtures contain no credentials/private payload; test-only sources cannot qualify production registry; all source and derived artifacts bind to IDs/digests; execution does not call external providers; evaluation never mutates production research state.
+- **Acceptance criteria:** pass synthetic and sanitized captured-contract cases for: all sources available; one optional source absent; one asset optional absent; independent source CORE failure; unqualified reachable provider; conflicting values; stale/revised/backfilled records; incomplete pagination; prompt injection; post-cutoff record; mapping ambiguity; undeclared feature dependency; bundle tampering; shadow ledger replay; no live-trading surface. Release report gives coverage and known unqualified sources.
+- **Required tests/evals:** full control-plane validator, existing eval validator, complete test suite, schema examples, property/fuzz tests for parsers/canonical digests, offline deterministic replay twice with identical outputs, package hygiene scan, static scan for direct provider bypass and order/account operations.
+- **Migration/compatibility:** run v0.3.9 fixtures and frozen artifacts through legacy readers; compare legacy pipeline output hashes under compatibility mode; differences require version bump and documented intentional migration.
+- **Non-goals:** treat passing synthetic tests as real provider qualification; claim production reliability from static evals; use test result to transition signal/source state automatically.
+
+### Slice 17 — v0.4 release closure
+
+- **Owning plane:** release governance and source-of-truth reconciliation.
+- **Rationale:** multi-source schemas, docs, configs, workflows, tests and packaging must describe the same release and preserve the exact qualified capability boundary.
+- **Dependencies:** Slice 16 and every slice claimed in the release scope; incomplete optional integrations must be listed as unqualified/deferred, not implied complete.
+- **Intended artifacts/components:** update `VERSION`; `CHANGELOG.md`; `README.md`; `docs/architecture.md`; `docs/data-capability-boundary.md`; source/MCP workflow and skills; agent roles only where input contracts change; package manifest via `scripts/control_plane/build_manifest.py`; release checks in `scripts/control_plane/validate_control_plane.py`; v0.4 release qualification report.
+- **Invariants:** release manifest generated from final staged source tree and matches file digests; no runtime research artifacts/caches/secrets included; schema/version migrations and legacy compatibility declared; MCP config adds only verified server identities; live-trading prohibition remains explicit; failed hard gates cannot be waived in release prose.
+- **Acceptance criteria:** clean focused release diff; package validator and all tests/evals pass under the repository-bound Python runtime; built manifest passes independent path/count/SHA-256 verification and has no unstaged content mismatch; README and architecture point to this blueprint; changelog records exact included/deferred slices; qualification report binds code/config/schema/eval identities and states unqualified sources; release commit and tag policy follow repository governance.
+- **Required tests/evals:** all Slice 16 checks; build manifest then independently recompute every entry; validation against clean packaged tree; no secret/transient/runtime state scan; documentation link check; release identity consistency checks.
+- **Migration/compatibility:** retain v0.3.9 artifacts and readers; document support/deprecation horizon before removing any Massive-specific schema or CLI; no forced migration of immutable user data.
+- **Non-goals:** deploy a new live system; activate sources whose qualifications fail; perform a v0.4 integration merely because it appears in this plan; change Git release/tag policy without existing authority.
+
+## Cross-slice release gates
+
+- **Source gate:** each source must have observed identity, current documented MCP route, endpoint/field contract, entitlement/access evidence, pagination evidence, time/revision semantics, retention/usage constraints, adversarial fixtures, qualification owner/date, and invalidation conditions. Unknown means `UNQUALIFIED`.
+- **Data gate:** every research input is durable, digest-bound, cutoff-checked, source-manifested, canonical-identity-resolved or explicitly excluded, and represented exactly once in the sealed bundle. Diagnostics never flow into calculations.
+- **Feature gate:** every consumed feature declares source dependencies and exact deterministic transforms; conflicts, missingness, stale values, quality failures, and degradation propagate into outputs.
+- **Model gate:** a new evidence feature affecting a forecast follows preregistration → research → independent validation → methodology audit → deterministic promotion. Optional acquisition integration alone does not justify model use.
+- **Risk gate:** portfolio limits are sourced from authoritative policy; research proposal and stress results are deterministic, digest-bound, and reviewed by the independent portfolio-risk role. Missing policy is reported as a gap.
+- **Security gate:** all external text is untrusted, sanitized as a separate digest-bound derivative, injection evals pass, and no source content can authorize tools, alter files, or write state.
+- **Release gate:** existing deterministic state machinery remains code-owned; forecasts are frozen before outcomes; shadow ledgers are append-only; package contents and release manifest are independently verified.
+
+## Authoritative repository map for implementation
+
+Start each slice by rechecking `AGENTS.md`, `.codex/config.toml`, current Git state, `VERSION`, and `CONTROL_PLANE_MANIFEST.json`; the manifest may be absent or dirty in a working tree and is not assumed valid by this roadmap. For v0.3.9 behavior, inspect `docs/architecture.md`, `docs/data-capability-boundary.md`, `docs/massive-mcp-data-plane.md`, `docs/research-state-model.md`, `schemas/massive_acquisition_manifest.schema.json`, `schemas/materialized_dataset.schema.json`, `schemas/daily_pipeline_result.schema.json`, `scripts/control_plane/seal_acquisition.py`, `scripts/control_plane/reconcile_materializations.py`, `scripts/control_plane/freeze_forecast.py`, `scripts/control_plane/promotion_gate.py`, `scripts/pipeline/run_daily_pipeline.py`, and `scripts/control_plane/validate_control_plane.py`. Respect the applicable nested instructions and slice ownership.
+
+For any source integration, use its official documented MCP route and current endpoint discovery at implementation time. The Massive MCP mandate continues to govern Massive data; a new source gets its own server identity, provider-call policy, access evidence, manifest, and qualification. Do not turn endpoint discovery or a dated entitlement snapshot into proof of actual access or trust. Do not make a provider call during implementation until the applicable bootstrap, request governance, and user-approved data scope are satisfied.
+
+## Completion definition
+
+This blueprint is authoritative when committed and navigable. v0.4 itself is complete only when the release closure slice passes with evidence for every included slice, all deferred/unqualified source capabilities remain visibly unavailable, and the release preserves the invariants above. This goal creates the blueprint only; it does not implement any later slice.

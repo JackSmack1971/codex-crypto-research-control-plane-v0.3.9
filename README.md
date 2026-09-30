@@ -164,6 +164,7 @@ The supplied research vision prioritizes cross-sectional factor research, breadt
 
 See:
 
+- `docs/roadmaps/multi-source-evidence-v0.4-blueprint.md` — ordered implementation blueprint for the v0.4 multi-source evidence plane
 - `docs/massive-mcp-data-plane.md`
 - `docs/data-capability-boundary.md`
 - `docs/architecture.md`
