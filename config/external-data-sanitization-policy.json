@@ -16,7 +16,7 @@
     "observed_at": "timestamp",
     "published_at": "timestamp",
     "available_at": "timestamp",
-    "interval": "identifier",
+    "interval": "interval",
     "sequence": "integer",
     "value": "number",
     "open": "number",
@@ -25,6 +25,9 @@
     "close": "number",
     "volume": "number"
   },
+  "identifier_pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+  "interval_pattern": "^[1-9][0-9]{0,3}(?:s|m|h|d|w|M)$",
+  "identifier_output": "OPAQUE_SHA256",
   "aliases": {
     "symbol": "asset_id",
     "ticker": "asset_id",

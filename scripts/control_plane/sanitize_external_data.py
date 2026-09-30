@@ -176,9 +176,17 @@ def _numeric_records(payload: Any, policy: dict[str, Any], diagnostics: list[dic
                     diagnostics.append({"code": "invalid_timestamp_field", "path": f"{path}.{origins[key]}", "action": "REJECTED"})
                     return
             elif kind == "identifier":
-                if not isinstance(value, str) or len(value) > 128 or re.search(r"(?i)https?://|[\\/]|\.\.", value):
+                if not isinstance(value, str) or not re.fullmatch(policy["identifier_pattern"], value) or re.search(r"\.\.", value):
                     diagnostics.append({"code": "invalid_or_path_like_identifier", "path": f"{path}.{origins[key]}", "action": "REJECTED"})
                     return
+            elif kind == "interval":
+                if not isinstance(value, str) or not re.fullmatch(policy["interval_pattern"], value):
+                    diagnostics.append({"code": "invalid_interval_label", "path": f"{path}.{origins[key]}", "action": "REJECTED"})
+                    return
+        for key, value in list(normalized.items()):
+            if allowed[key] == "identifier":
+                opaque = hashlib.sha256(canonical_bytes({"policy_id": policy["policy_id"], "policy_version": policy["policy_version"], "field": key, "external_identifier": value})).hexdigest()
+                normalized[key] = "extid:" + opaque
         records.append(normalized)
 
     if not isinstance(payload, dict):
