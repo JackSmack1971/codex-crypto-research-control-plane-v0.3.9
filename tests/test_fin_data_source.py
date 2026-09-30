@@ -127,6 +127,16 @@ class FinDataQualificationTests(unittest.TestCase):
         self.assertTrue(all(item["status"] == "QUALIFIED" for item in result["capabilities"].values()))
         self.assertTrue(all(not item["admitted"] for item in result["capabilities"].values()))
 
+    def test_runtime_qualified_plus_upstream_rights_block_stays_not_admitted(self):
+        config = json.loads(json.dumps(self.config))
+        next(item for item in config["capabilities"] if item["capability_id"] == "fin.crypto.funding")["admission"] = "ADMITTED"
+        result = _evaluate_qualification(self.snapshot, config, self.now, self.test_contracts)
+        capability = result["capabilities"]["fin.crypto.funding"]
+        self.assertEqual("QUALIFIED", capability["status"])
+        self.assertEqual("BLOCK", capability["rights_status"])
+        self.assertFalse(capability["admitted"])
+        self.assertEqual("BLOCKING", result["health_severity"])
+
     def test_endpoint_qualification_does_not_require_unattested_render_deployment_id(self):
         self.snapshot["deployment_id"] = None
         result = _evaluate_qualification(self.snapshot, self.config, self.now, self.test_contracts)

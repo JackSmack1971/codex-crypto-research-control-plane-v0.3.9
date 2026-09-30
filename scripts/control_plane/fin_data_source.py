@@ -21,6 +21,7 @@ from fin_data_use_authorization import (authorization_error as use_authorization
                                         evidence_binding_authorized, load_policy as load_use_authorization,
                                         policy_digest as use_authorization_digest)  # noqa: E402
 from source_evidence import expected_manifest_id, validate_source_manifest  # noqa: E402
+from source_rights import admission_rights_result, snapshot_for_capability  # noqa: E402
 
 
 def _read(path: str | Path) -> dict[str, Any]:
@@ -289,9 +290,15 @@ def _evaluate_qualification(snapshot: dict[str, Any], capabilities: dict[str, An
                     except (ValueError, TypeError, AttributeError):
                         state, why, age = "BLOCKED", "representative_observation_time_invalid", None
         severity = capability["severity"]
+        rights_state, rights_digest = admission_rights_result(cid, "PASS" if state == "QUALIFIED" else "BLOCK")
+        rights_snapshot = snapshot_for_capability(cid)
         evaluated[cid] = {"tool_name": tool_name, "status": state, "severity": severity,
                           "reason": why, "age_seconds": age,
-                          "admitted": state == "QUALIFIED" and capability.get("admission") == "ADMITTED"}
+                          "rights_status": rights_state,
+                          "rights_snapshot_id": rights_snapshot.get("rights_snapshot_id") if rights_snapshot else None,
+                          "rights_snapshot_digest": rights_digest,
+                          "admitted": state == "QUALIFIED" and rights_state == "PASS"
+                          and capability.get("admission") == "ADMITTED"}
 
     states = [item["status"] for item in evaluated.values()]
     if endpoint_status == "UNAVAILABLE":
@@ -315,7 +322,7 @@ def _evaluate_qualification(snapshot: dict[str, Any], capabilities: dict[str, An
     if endpoint_status != "AVAILABLE" or any(item["severity"] == "BLOCKING" and item["status"] != "QUALIFIED"
                                                for item in evaluated.values()):
         health_severity = "BLOCKING"
-    elif not use_authorized:
+    elif not use_authorized or any(item["rights_status"] != "PASS" for item in evaluated.values()):
         health_severity = "BLOCKING"
     elif overall != "QUALIFIED":
         health_severity = "DEGRADED"
@@ -490,6 +497,9 @@ def build_manifest(snapshot: dict[str, Any], capability: dict[str, Any], run_id:
     normalized_digest = digest(rows)
     report = snapshot.get("qualification_report", {})
     cap_report = report.get("capabilities", {}).get(cid, {}) if isinstance(report, dict) else {}
+    rights_snapshot = snapshot_for_capability(cid)
+    rights_status, rights_digest = admission_rights_result(cid, "PASS" if cap_report.get("status") == "QUALIFIED" else "BLOCK")
+    rights_snapshot_id = rights_snapshot.get("rights_snapshot_id") if rights_snapshot else None
     has_observation = bool(response_contract and isinstance(result, dict)
                            and result.get("isError") is not True and rows)
     qualified = bool(report.get("source_id") == "fin_data_mcp_render_prod"
@@ -499,6 +509,7 @@ def build_manifest(snapshot: dict[str, Any], capability: dict[str, Any], run_id:
                      and report.get("endpoint_url") == snapshot.get("endpoint_url")
                      and report.get("deployment_id") == snapshot.get("deployment_id")
                      and cap_report.get("status") == "QUALIFIED" and cap_report.get("admitted") is True
+                     and rights_status == "PASS"
                      and evidence_binding_authorized(use_authorization,
                                                      snapshot.get("verified_request_ledger", {}), report)
                      and report.get("ledger_digest") == snapshot.get("verified_request_ledger", {}).get("content_digest")
@@ -523,7 +534,10 @@ def build_manifest(snapshot: dict[str, Any], capability: dict[str, Any], run_id:
                          "row_count": len(rows), "observed_at": observation, "published_at": None,
                          "available_at": observed_at, "freshness_seconds": age,
                          "max_age_seconds": max_age, "qualification": "QUALIFIED" if qualified else "UNQUALIFIED",
-                         "admissibility": "ADMITTED" if qualified else "NOT_ADMITTED"})
+                         "admissibility": "ADMITTED" if qualified else "NOT_ADMITTED",
+                         "rights_result": rights_status,
+                         **({"rights_snapshot_id": rights_snapshot_id,
+                             "rights_snapshot_digest": rights_digest} if rights_snapshot_id and rights_digest else {})})
     if qualified:
         manifest_status, availability, reason = "COMPLETE", "AVAILABLE", None
     elif snapshot.get("reachability") in {"FAILED", "COLD", "UNAVAILABLE"}:
@@ -535,6 +549,8 @@ def build_manifest(snapshot: dict[str, Any], capability: dict[str, Any], run_id:
         elif not evidence_binding_authorized(use_authorization,
                                               snapshot.get("verified_request_ledger", {}), report):
             reason = "provider_use_authorization_binding_missing_or_changed"
+        elif rights_status != "PASS":
+            reason = f"upstream_source_rights_{rights_status.lower()}"
         else:
             reason = "fin_data_capability_not_qualified"
     else:

@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "rights_snapshots": [
+    {
+      "schema_version": "1.0",
+      "rights_snapshot_id": "okx-market-data-2026-09-30",
+      "upstream_provider_id": "okx",
+      "upstream_dataset_id": "okx-market-data",
+      "terms": {"url": "https://www.okx.com/en-us/help/okx-api-agreement", "version": "Last updated 2026-07-28", "effective_date": null, "contracting_entity": null, "jurisdiction": null},
+      "intended_use": "institutional fund research; durable storage; deterministic feature derivation; internal AI-assisted analysis",
+      "use_matrix": {"research": "PROHIBITED", "durable_storage": "UNKNOWN", "deterministic_derivation": "UNKNOWN", "ai_llm_processing": "UNKNOWN", "redistribution_publication": "PROHIBITED", "institutional_commercial": "PROHIBITED"},
+      "required_evidence": ["fund_contracting_entity_and_jurisdiction", "written_OKX_license_for_institutional_fund_research", "written_scope_for_durable_storage_and_derived_features", "written_scope_for_AI_inference_processing", "written_scope_for_publication_or_redistribution_if_applicable"],
+      "evidence": [
+        {"url": "https://www.okx.com/en-us/help/okx-api-agreement", "digest": "sha256:ec50068a1afaaaee184a9140da2f6a3e52802d8c5b4debd496ae6cb4748d3f32", "captured_at": "2026-09-30T00:00:00Z", "provenance": "Human-readable, normalized terms review retained locally; hash binds the review note, not the remote page bytes.", "provenance_path": "research/sources/rights/okx-terms-review-2026-09-30.md"}
+      ],
+      "qualification_result": "BLOCK",
+      "review": {"reviewer": "repository-rights-review", "rationale": "Published OKX terms restrict market data to personal non-commercial use and require separate licensing for large-scale/institutional use; applicability, entity and license scope remain unproven. MCP registration and public endpoints do not grant rights.", "authorization_documented": false},
+      "effective_at": "2026-09-30T00:00:00Z",
+      "expires_at": null
+    },
+    {
+      "schema_version": "1.0",
+      "rights_snapshot_id": "massive-standard-market-data-2026-09-30",
+      "upstream_provider_id": "massive",
+      "upstream_dataset_id": "massive-market-data-unspecified-crypto",
+      "terms": {"url": "https://massive.com/legal/market-data-terms-of-service", "version": "Last updated 2025-08-28", "effective_date": "2025-08-28", "contracting_entity": "Massive.com, Inc.", "jurisdiction": null},
+      "intended_use": "institutional fund research; durable storage; deterministic feature derivation; internal AI-assisted analysis",
+      "use_matrix": {"research": "PROHIBITED", "durable_storage": "UNKNOWN", "deterministic_derivation": "PROHIBITED", "ai_llm_processing": "UNKNOWN", "redistribution_publication": "PROHIBITED", "institutional_commercial": "PROHIBITED"},
+      "required_evidence": ["business_order_form_for_exact_crypto_datasets", "upstream_third_party_terms_or_agreements", "written_non_display_storage_and_derived_feature_rights", "written_AI_processing_scope_if_applicable"],
+      "evidence": [{"url": "https://massive.com/legal/market-data-terms-of-service", "digest": "sha256:30622679898700614a9a0ac96f40f2d40f602c5aebe4b62b22fb1a3272964c1c", "captured_at": "2026-09-30T00:00:00Z", "provenance": "Human-readable, normalized terms review retained locally; hash binds the review note, not the remote page bytes.", "provenance_path": "research/sources/rights/massive-terms-review-2026-09-30.md"}],
+      "qualification_result": "BLOCK",
+      "review": {"reviewer": "repository-rights-review", "rationale": "Standard terms do not authorize institutional use; a business product, dataset order form, and upstream agreements must be reviewed before any dataset-specific conclusion.", "authorization_documented": false},
+      "effective_at": "2026-09-30T00:00:00Z",
+      "expires_at": null
+    }
+  ],
+  "capability_sources": [
+    {"capability_id": "fin.crypto.funding", "upstream_provider_id": "okx", "upstream_dataset_id": "okx-market-data"},
+    {"capability_id": "fin.crypto.open_interest", "upstream_provider_id": "okx", "upstream_dataset_id": "okx-market-data"},
+    {"capability_id": "fin.crypto.long_short_ratio", "upstream_provider_id": "okx", "upstream_dataset_id": "okx-market-data"},
+    {"capability_id": "fin.crypto.mark_price", "upstream_provider_id": "okx", "upstream_dataset_id": "okx-market-data"},
+    {"capability_id": "fin.crypto.index_candles", "upstream_provider_id": "okx", "upstream_dataset_id": "okx-market-data"},
+    {"capability_id": "fin.crypto.orderbook", "upstream_provider_id": "okx", "upstream_dataset_id": "okx-market-data"},
+    {"capability_id": "fin.crypto.recent_trades", "upstream_provider_id": "okx", "upstream_dataset_id": "okx-market-data"},
+    {"capability_id": "fin.crypto.candles", "upstream_provider_id": "okx", "upstream_dataset_id": "okx-market-data"},
+    {"capability_id": "fin.crypto.ticker", "upstream_provider_id": "okx", "upstream_dataset_id": "okx-market-data"}
+  ]
+}

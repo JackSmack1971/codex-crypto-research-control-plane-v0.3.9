@@ -42,6 +42,7 @@ SCHEMAS = [
     "fin_data_basis_observation.schema.json",
     "fin_data_qualification_report.schema.json",
     "fin_data_response_contracts.schema.json",
+    "source_rights_qualification.schema.json",
 ]
 MASSIVE_MCP_URL = "https://mcp.massive.com/"
 

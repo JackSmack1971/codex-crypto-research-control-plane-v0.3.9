@@ -2,10 +2,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "source_id", "provider", "scope", "status", "reason", "evidence", "required_evidence_to_authorize"],
+  "required": ["schema_version", "upstream_provider_id", "provider", "scope", "status", "reason", "evidence", "required_evidence_to_authorize"],
   "properties": {
     "schema_version": {"const": "1.0"},
-    "source_id": {"const": "fin_data_mcp_render_prod"},
+    "upstream_provider_id": {"const": "okx"},
     "provider": {"const": "OKX"},
     "scope": {"type": "string", "minLength": 1},
     "status": {"enum": ["AUTHORIZED", "BLOCKED_PENDING_RIGHTS_CONFIRMATION", "DENIED"]},

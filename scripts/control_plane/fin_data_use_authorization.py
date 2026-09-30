@@ -28,7 +28,7 @@ def authorization_error(policy: dict[str, Any]) -> str | None:
     errors = policy_errors(policy)
     if errors:
         return "provider_use_authorization_policy_invalid"
-    if policy.get("source_id") != "fin_data_mcp_render_prod":
+    if policy.get("upstream_provider_id") != "okx":
         return "provider_use_authorization_identity_mismatch"
     if policy.get("status") != "AUTHORIZED":
         return "provider_use_authorization_blocked:" + str(policy.get("status", "MISSING"))
