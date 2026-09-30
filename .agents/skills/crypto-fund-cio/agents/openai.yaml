@@ -1,0 +1,6 @@
+interface:
+  display_name: "Crypto Fund CIO"
+  short_description: "Orchestrate the governed hedge-fund research lifecycle"
+  default_prompt: "Use $crypto-fund-cio to run the strongest valid hedge-fund research and portfolio-decision lifecycle for this objective."
+policy:
+  allow_implicit_invocation: false

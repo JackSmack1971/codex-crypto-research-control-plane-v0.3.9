@@ -20,7 +20,7 @@ Require an immutable registered hypothesis. Read `docs/research-state-model.md`,
 3. Delegate research to `factor-researcher`. If that independent research context is unavailable, stop with the missing capability rather than collapsing research and validation into one context. Record every parameter, horizon, filter, universe, and transformation variant attempted; do not discard failed variants.
 4. Prefer evidence about cross-sectional monotonicity, rank robustness, parameter stability, regime behavior, turnover, and liquidity-aware comparisons over threshold mining.
 5. Produce a candidate handoff with the hypothesis ID, candidate ID, attempted-variant ledger, source acquisition identity, result artifacts, limitations, and evidence paths. Do not issue a promotion verdict.
-6. If the user's goal explicitly continues through the full lifecycle, hand the finished candidate to `$candidate-validation` and then `$methodology-audit`; otherwise stop at the research handoff.
+6. If the user's goal explicitly continues through the full lifecycle, hand the finished candidate to `$candidate-validation`, then candidate-bound `$methodology-audit`, then `$candidate-promotion`; stop at the first non-passing gate. Otherwise stop at the research handoff.
 
 ## Completion
 

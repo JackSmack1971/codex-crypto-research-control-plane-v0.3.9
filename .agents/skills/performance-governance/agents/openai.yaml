@@ -1,0 +1,4 @@
+interface:
+  display_name: "Performance Governance"
+  short_description: "Turn matured OOS evidence into signal-governance decisions"
+  default_prompt: "Use $performance-governance to review accumulated immutable OOS outcomes and determine the strongest policy-authorized next action."

@@ -7,7 +7,7 @@ description: Independently validate an already-researched signal candidate befor
 
 # Candidate validation
 
-Own the independent statistical-validation stage. A `PROMOTE` verdict means only "eligible for the deterministic promotion gate"; it is not a state transition.
+Own the independent statistical-validation stage. A `PROMOTE` verdict means only "eligible for `$candidate-promotion`"; it is not a state transition and does not authorize discretionary inclusion in the investable signal set.
 
 ## Inputs
 

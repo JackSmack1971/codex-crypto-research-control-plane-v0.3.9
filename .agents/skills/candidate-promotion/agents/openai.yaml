@@ -1,0 +1,4 @@
+interface:
+  display_name: "Candidate Promotion"
+  short_description: "Apply the deterministic signal-promotion gate"
+  default_prompt: "Use $candidate-promotion to apply the repository-owned promotion gate to this validated and audited candidate."

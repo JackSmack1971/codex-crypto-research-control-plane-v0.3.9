@@ -1,6 +1,6 @@
 ---
 name: massive-basic-endpoints
-description: Select and validate Massive REST capabilities documented as Included on the Basic plan in the 2026-09-28 snapshot. Use when a governed Massive MCP task must establish the snapshot entitlement/freshness boundary; do not treat this static catalog as live retrieval or current entitlement proof.
+description: Select and validate Massive REST capabilities documented as Included on the Basic plan in the 2026-09-28 snapshot. Use when a governed Massive MCP task must establish the snapshot entitlement/freshness boundary; do not use for live retrieval, current entitlement proof, or investment analysis.
 ---
 
 **Repository path contract:** paths such as `config/...`, `scripts/...`, `docs/...`, `schemas/...`, `research/...`, and `workflows/...` are relative to the active project root (the directory containing `AGENTS.md` and `.codex/config.toml`), **not** relative to this installed Skill directory. Never walk `..` from the Skill installation to find project files. Never synthesize or reuse an absolute repository path from memory, prior runs, package names, or examples. First inspect the current working directory and verify the two project-root sentinels. If they are absent, do not guess a drive/path; fail project-root resolution explicitly.

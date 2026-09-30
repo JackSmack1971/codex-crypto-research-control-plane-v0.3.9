@@ -1,6 +1,6 @@
 ---
 name: massive-mcp-data-plane
-description: Acquire and stage Massive-backed research data through the configured Massive MCP server with Basic-plan entitlement checks, current endpoint verification, pagination, workspace reuse, cutoff discipline, and a sealed acquisition manifest. Use inside governed daily, factor-research, or OOS workflows; do not bypass Massive MCP with direct HTTP/API clients.
+description: Acquire and stage Massive-backed research data through the configured Massive MCP server with entitlement checks, current endpoint verification, pagination, cutoff discipline, durable materialization, and a sealed acquisition manifest. Use when governed daily, factor-research, or OOS workflows require Massive-backed source data; do not use for direct HTTP/API retrieval, factor inference, or portfolio conclusions.
 ---
 
 **Repository path contract:** paths such as `config/...`, `scripts/...`, `docs/...`, `schemas/...`, `research/...`, and `workflows/...` are relative to the active project root (the directory containing `AGENTS.md` and `.codex/config.toml`), **not** relative to this installed Skill directory. Never walk `..` from the Skill installation to find project files. Never synthesize or reuse an absolute repository path from memory, prior runs, package names, or examples. First inspect the current working directory and verify the two project-root sentinels. If they are absent, do not guess a drive/path; fail project-root resolution explicitly.
