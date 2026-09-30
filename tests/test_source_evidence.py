@@ -4,7 +4,7 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts/control_plane"))
 from common import digest
-from source_evidence import expected_manifest_id, validate_bundle, validate_source_manifest
+from source_evidence import expected_bundle_id, expected_manifest_id, validate_bundle, validate_source_manifest
 from build_evidence_bundle import build
 from validate_sources import validate, validate_qualification
 
@@ -19,7 +19,8 @@ class SourceEvidenceTests(unittest.TestCase):
         (self.root/"manifest.json").write_text(json.dumps(self.manifest),encoding="utf-8")
     def tearDown(self): self.tmp.cleanup()
     def bundle(self, members=None):
-        b={"schema_version":"1.0","bundle_id":"b-1","run_id":self.manifest["run_id"],"attempt_id":self.manifest["attempt_id"],"research_cutoff":self.manifest["research_cutoff"],"members":members or [{"source_id":"source-a","manifest_id":self.manifest["manifest_id"],"manifest_path":"manifest.json","manifest_digest":self.manifest["content_digest"],"status":"COMPLETE","qualification":"QUALIFIED","admissibility":"ADMITTED"}]}
+        b={"schema_version":"1.0","bundle_id":"","run_id":self.manifest["run_id"],"attempt_id":self.manifest["attempt_id"],"research_cutoff":self.manifest["research_cutoff"],"members":members or [{"source_id":"source-a","manifest_id":self.manifest["manifest_id"],"manifest_path":"manifest.json","manifest_digest":self.manifest["content_digest"],"status":"COMPLETE","qualification":"QUALIFIED","admissibility":"ADMITTED"}]}
+        b["bundle_id"]=expected_bundle_id(b)
         b["content_digest"]=digest(b); return b
     def test_valid_manifest_and_bundle(self):
         self.assertEqual([],validate_source_manifest(self.manifest,self.registry)); self.assertEqual([],validate_bundle(self.bundle(),self.root,self.registry))
@@ -36,10 +37,18 @@ class SourceEvidenceTests(unittest.TestCase):
         changed["source"]["identity_digest"]=digest({k:v for k,v in changed["source"].items() if k!="identity_digest"}); changed["content_digest"]=digest({k:v for k,v in changed.items() if k!="content_digest"})
         self.assertIn("manifest.source_registry_identity_mismatch",validate_source_manifest(changed,self.registry))
     def test_bundle_digest_binding_tampering_and_substitution_rejected(self):
-        b=self.bundle(); b["members"][0]["manifest_digest"]="sha256:"+"f"*64; b["content_digest"]=digest({k:v for k,v in b.items() if k!="content_digest"})
+        b=self.bundle(); b["members"][0]["manifest_digest"]="sha256:"+"f"*64; b["bundle_id"]=expected_bundle_id(b); b["content_digest"]=digest({k:v for k,v in b.items() if k!="content_digest"})
         self.assertTrue(any("manifest_digest_binding_mismatch" in e for e in validate_bundle(b,self.root,self.registry)))
-        b=self.bundle(); b["members"][0]["source_id"]="substituted"; b["content_digest"]=digest({k:v for k,v in b.items() if k!="content_digest"})
+        b=self.bundle(); b["members"][0]["source_id"]="substituted"; b["bundle_id"]=expected_bundle_id(b); b["content_digest"]=digest({k:v for k,v in b.items() if k!="content_digest"})
         self.assertTrue(any("source_identity_mismatch" in e for e in validate_bundle(b,self.root,self.registry)))
+    def test_full_valid_source_replacement_requires_new_bundle_identity(self):
+        replacement=json.loads(json.dumps(self.manifest)); replacement["manifest_id"]=""; replacement["source"]["source_id"]="source-b"; replacement["source"]["provider"]="Fixture B"; replacement["source"]["identity_digest"]=digest({k:v for k,v in replacement["source"].items() if k!="identity_digest"}); replacement["manifest_id"]=expected_manifest_id(replacement); replacement["content_digest"]=digest({k:v for k,v in replacement.items() if k!="content_digest"})
+        (self.root/"replacement.json").write_text(json.dumps(replacement),encoding="utf-8")
+        registry=json.loads(json.dumps(self.registry)); new_source={"source_id":"source-b",**{k:v for k,v in replacement["source"].items() if k!="identity_digest"},"identity_digest":replacement["source"]["identity_digest"]}; registry["sources"].append(new_source)
+        replaced_member={"source_id":"source-b","manifest_id":replacement["manifest_id"],"manifest_path":"replacement.json","manifest_digest":replacement["content_digest"],"status":"COMPLETE","qualification":"QUALIFIED","admissibility":"ADMITTED"}
+        b=self.bundle(); b["members"]=[replaced_member]; b["content_digest"]=digest({k:v for k,v in b.items() if k!="content_digest"})
+        self.assertNotEqual(b["bundle_id"],expected_bundle_id(b))
+        self.assertIn("bundle.bundle_id_mismatch",validate_bundle(b,self.root,registry))
     def test_unavailable_degraded_stale_unqualified_and_not_admitted(self):
         cases=[("availability_status","UNAVAILABLE"),("status","DEGRADED"),("qualification","UNQUALIFIED"),("admissibility","NOT_ADMITTED")]
         for key,value in cases:
@@ -52,7 +61,7 @@ class SourceEvidenceTests(unittest.TestCase):
                 if key == "status":
                     self.assertEqual([], validate_source_manifest(m,self.registry))
                     member=self.bundle()["members"][0]; member["manifest_id"]=m["manifest_id"]; member["status"]="DEGRADED"; member["manifest_digest"]=m["content_digest"]
-                    b=self.bundle([member]); b["content_digest"]=digest({k:v for k,v in b.items() if k!="content_digest"})
+                    b=self.bundle([member]); b["bundle_id"]=expected_bundle_id(b); b["content_digest"]=digest({k:v for k,v in b.items() if k!="content_digest"})
                     (self.root/"manifest.json").write_text(json.dumps(m),encoding="utf-8")
                     self.assertEqual([], validate_bundle(b,self.root,self.registry))
                     self.assertNotEqual("COMPLETE",b["members"][0]["status"])
@@ -72,7 +81,7 @@ class SourceEvidenceTests(unittest.TestCase):
         self.assertEqual([],validate_source_manifest(unavailable,self.registry))
         (self.root/"manifest.json").write_text(json.dumps(unavailable),encoding="utf-8")
         member={"source_id":"source-a","manifest_id":unavailable["manifest_id"],"manifest_path":"manifest.json","manifest_digest":unavailable["content_digest"],"status":"UNAVAILABLE","qualification":"UNQUALIFIED","admissibility":"NOT_ADMITTED"}
-        b=self.bundle([member]); b["content_digest"]=digest({k:v for k,v in b.items() if k!="content_digest"})
+        b=self.bundle([member]); b["bundle_id"]=expected_bundle_id(b); b["content_digest"]=digest({k:v for k,v in b.items() if k!="content_digest"})
         self.assertEqual([],validate_bundle(b,self.root,self.registry))
         self.assertEqual("UNAVAILABLE",b["members"][0]["status"])
     def test_discovery_availability_pagination_and_timezone_fail_closed(self):

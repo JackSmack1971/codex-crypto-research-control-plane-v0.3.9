@@ -1,9 +1,9 @@
 from __future__ import annotations
-import argparse, hashlib, json, sys
+import argparse, json, sys
 from pathlib import Path
 sys.dont_write_bytecode = True
 from common import digest, write_new_json
-from source_evidence import validate_source_manifest
+from source_evidence import expected_bundle_id, validate_source_manifest
 
 def build(paths: list[Path], run_id: str, attempt_id: str, cutoff: str, root: Path, registry: dict | None = None) -> dict:
     members=[]; seen=set()
@@ -18,8 +18,7 @@ def build(paths: list[Path], run_id: str, attempt_id: str, cutoff: str, root: Pa
         members.append({"source_id":source,"manifest_id":obj["manifest_id"],"manifest_path":path.relative_to(root.resolve()).as_posix(),"manifest_digest":obj["content_digest"],"status":obj["status"],"qualification":obj["qualification"],"admissibility":obj["admissibility"]})
     members.sort(key=lambda item:item["source_id"])
     base={"schema_version":"1.0","run_id":run_id,"attempt_id":attempt_id,"research_cutoff":cutoff,"members":members}
-    bundle_id="eb-"+hashlib.sha256(json.dumps(base,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()).hexdigest()[:24]
-    obj={"bundle_id":bundle_id,**base}; obj["content_digest"]=digest(obj)
+    obj={"bundle_id":"",**base}; obj["bundle_id"]=expected_bundle_id(obj); obj["content_digest"]=digest(obj)
     return obj
 
 def main() -> int:

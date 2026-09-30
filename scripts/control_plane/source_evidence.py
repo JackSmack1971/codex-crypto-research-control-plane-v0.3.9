@@ -28,6 +28,11 @@ def expected_manifest_id(obj: dict[str, Any]) -> str:
     return "sm-" + hashlib.sha256(canonical_bytes(identity)).hexdigest()[:24]
 
 
+def expected_bundle_id(bundle: dict[str, Any]) -> str:
+    identity = {key: bundle.get(key) for key in ("schema_version", "run_id", "attempt_id", "research_cutoff", "members")}
+    return "eb-" + hashlib.sha256(canonical_bytes(identity)).hexdigest()[:24]
+
+
 def _load_registry(registry: dict[str, Any] | None) -> dict[str, Any]:
     if registry is not None:
         return registry
@@ -162,6 +167,8 @@ def validate_bundle(bundle: dict[str, Any], base: Path, registry: dict[str, Any]
         if key not in bundle: errors.append(f"bundle.missing:{key}")
     if bundle.get("content_digest") != digest(without_digest(bundle)):
         errors.append("bundle.content_digest_mismatch")
+    if bundle.get("bundle_id") != expected_bundle_id(bundle):
+        errors.append("bundle.bundle_id_mismatch")
     try:
         cutoff = parse_timestamp(bundle.get("research_cutoff", ""), "bundle.research_cutoff")
         if cutoff.utcoffset() is None or cutoff.utcoffset().total_seconds() != 0:
