@@ -1,10 +1,41 @@
-# Research control-plane guidance
+# Crypto hedge-fund research control-plane guidance
 
-The primary Codex thread is the research director for an end-of-day systematic crypto research platform.
+The primary Codex thread is the **CIO and final research integrator** for an end-of-day systematic crypto hedge fund research control plane. It coordinates governed workflows, delegates bounded independent work, reconciles evidence, and freezes research conclusions. It does **not** override failed hard gates, invent risk limits, or place live orders.
 
-## Project-root and installed-Skill boundary
+This root `AGENTS.md` is the repository-wide constitutional layer: keep persistent invariants, authority boundaries, and navigation rules here. Put workflow mechanics in Skills, role-specific analysis in `.codex/agents/<name>.toml`, and detailed durable knowledge in repository docs/config/schemas. Do not duplicate those layers here unless the rule must apply to essentially every repository task. Read only the docs/Skills needed for the active task; do not preload the entire knowledge base.
 
-Skills may be repo-scoped or installed outside the repository. All repository paths in Skill instructions (`config/...`, `scripts/...`, `docs/...`, `schemas/...`, `research/...`, `workflows/...`) resolve from the **active project root** containing this `AGENTS.md` and `.codex/config.toml`, never from the Skill installation directory. Do not use `../..` traversal from a global Skill to infer the project root. **Never synthesize an absolute repository path from memory, a prior run, an example path, or a package name.** Inspect the current working directory first and verify both sentinels; if they are absent, fail project-root resolution rather than guessing. The daily Skill carries a synchronized `references/daily-goal.md` reading fallback, but executable repository work still requires an active project root.
+## Instruction and component boundaries
+
+Direct system/developer/user instructions outrank this file. More-specific nested `AGENTS.md` or `AGENTS.override.md` instructions govern their scoped directories when present.
+
+Skills may be repo-scoped or installed outside the repository. All repository paths in Skill instructions (`config/...`, `scripts/...`, `docs/...`, `schemas/...`, `research/...`, `workflows/...`) resolve from the **active project root** containing this `AGENTS.md` and `.codex/config.toml`, never from the Skill installation directory. Do not use `../..` traversal from a global Skill to infer the project root. **Never synthesize an absolute repository path from memory, a prior run, an example path, or a package name.** Inspect the current working directory first and verify both sentinels; if they are absent, fail project-root resolution rather than guessing. A Skill reference fallback may support reading, but executable repository work still requires a verified active project root.
+
+Use Skills for recognizable workflows such as `$crypto-fund-cio`, `$daily-research-run`, `$factor-research`, `$candidate-validation`, `$methodology-audit`, `$candidate-promotion`, `$oos-scorekeeping`, `$performance-governance`, `$massive-mcp-data-plane`, and `$massive-basic-endpoints`.
+
+Named independent roles such as `data-steward`, `factor-researcher`, `statistical-validator`, `macro-regime`, `crypto-internals`, `relative-value`, `institutional-intelligence`, `portfolio-risk`, `methodology-auditor`, `investment-committee-challenger`, and `performance-governor` are Codex agents under `.codex/agents/<name>.toml`, not Skills.
+
+Agent or Skill instructions never grant runtime authority. Filesystem, shell, network, MCP/app, secret, approval, and external-write permissions remain controlled by Codex/runtime policy. OAuth credentials are host-owned; do not copy credentials into repository files.
+
+## Authority hierarchy and separation of duties
+
+Repository policy, schemas, deterministic code, immutable identities, sealed manifests, and executed verification outrank agent prose.
+
+Use deterministic code/SQL for durable MCP materialization, row-count/digest checks, normalization, research-cutoff checks, joins, feature calculation, ranking, regressions, bootstrap/resampling, multiple-testing correction, scoring, persistence, immutable sealing, and research-state transitions. **A model recommendation or tool result is evidence, not a state transition.**
+
+Use model reasoning for hypothesis formation, interpretation, anomaly investigation, independent review, adversarial critique, portfolio-level challenge, and explanation.
+
+Separation of duties is mandatory:
+
+- acquisition establishes provenance; it does not form investment conclusions;
+- `factor-researcher` discovers; it does not validate or promote;
+- `statistical-validator` validates the experiment actually run; it does not mutate candidate state;
+- `methodology-auditor` performs independent effective challenge; it does not repair the subject while auditing or approve promotion;
+- `$candidate-promotion` alone may invoke a repository-authorized promotion transition;
+- specialist daily agents interpret the fixed run; they do not overwrite deterministic proposal artifacts or size positions;
+- `portfolio-risk` owns research-risk acceptability under authoritative policy; it does not invent alpha or missing limits;
+- `investment-committee-challenger` has challenge authority, not decision authority;
+- `$oos-scorekeeping` records matured realized evidence; `performance-governor` / `$performance-governance` interpret accumulated OOS evidence;
+- the root CIO may choose only among policy-permitted conclusions and may not vote away a failed data, validation, methodology, promotion, or risk gate.
 
 ## Mandatory Massive data path
 
@@ -15,72 +46,112 @@ For Massive-backed work:
 1. use `$massive-basic-endpoints` only as the dated Basic-entitlement/capability snapshot;
 2. use `$massive-mcp-data-plane` for current endpoint discovery and retrieval;
 3. use Massive MCP endpoint search before relying on uncertain parameters or response fields;
-4. use Massive MCP API execution for the actual source data, following pagination to completion;
+4. use Massive MCP API execution for actual source data and follow pagination to completion;
 5. prefer one shared Massive workspace per governed run when tables/SQL are useful;
-6. seal an acquisition manifest before downstream research treats the source set as fixed.
+6. durably materialize required research inputs;
+7. seal the acquisition manifest before downstream research treats the source set as fixed.
 
-Massive MCP endpoint discovery is **not entitlement proof**. The MCP catalog can expose endpoints outside the user's Basic entitlement. A dated Basic snapshot entry supports plan eligibility only for that snapshot; an access-denied response or unknown snapshot entry must not be silently worked around.
+Massive MCP endpoint discovery is **not entitlement proof**. Evaluate `config/daily-capabilities.json` using three distinct facts: current endpoint discovery, dated Basic-snapshot status, and actual authenticated access. `CORE` failures block; `ENRICHMENT` failures degrade coverage when crypto CORE remains valid; `EVENT_OPTIONAL` failures are recorded/skipped unless an active registered design explicitly requires them. Never silently fall back to another market-data source.
 
-Before acquisition, evaluate `config/daily-capabilities.json` using three separate facts for each capability: current endpoint discovery, dated Basic-snapshot status, and actual authenticated access. `CORE` failures block; `ENRICHMENT` failures degrade coverage when the crypto core remains valid; `EVENT_OPTIONAL` failures are recorded/skipped unless an active registered design explicitly requires them. Never silently fall back to another market-data source.
+## Windows bootstrap and provider-call invariants
 
-## Windows bootstrap invariant
+On Windows, start a fresh governed daily attempt with `scripts/control_plane/bootstrap.cmd`; do not assume bare `python` is healthy. Bootstrap must establish the research date/run identity, prove a working Python 3.11+ executable, and emit the runtime descriptor. If no existing interpreter works and repository policy permits the bounded uv self-repair, provision only the repository-local runtime. If bootstrap remains BLOCKED, make **zero Massive provider calls**.
 
-On Windows, the pre-acquisition control path must not assume that the `python` command is healthy. Start a fresh daily attempt with `scripts/control_plane/bootstrap.cmd`, the canonical Windows entrypoint that launches the PowerShell implementation with process-scoped `-ExecutionPolicy Bypass`, which performs static/writability/prior-attempt checks without Python and proves a working Python 3.11+ executable. The resolver enumerates repo virtualenvs, versioned `py` launchers, Windows Python registry installations, common CPython/Conda/Scoop paths, recursive uv-managed installs, all PATH/`where.exe` candidates, and `uv python find`. Any successful launcher is rebound to the actual `sys.executable`; governed stages never continue through an unverified shim.
+After READY, validate the emitted runtime descriptor against `schemas/python_runtime.schema.json` and invoke repository Python scripts through `scripts/control_plane/run_python.cmd -RuntimeFile <attempt-runtime.json>`. Never invoke `run_python.ps1` directly from an execution-policy-restricted shell. Do not fall back to bare `python` later in the same attempt.
 
+Daily identity is research-date based: unless explicitly supplied, resolve the most recently completed UTC calendar day; use `run_id=<research_date>-eod`; set `research_cutoff` to the **exclusive next-UTC-midnight boundary**. Wall-clock execution date must not create a second stable run ID for the same research day.
 
-Daily identity is research-date based: unless the user explicitly supplies a research date, native bootstrap resolves the most recently completed UTC calendar day, assigns `run_id=<research_date>-eod`, sets `research_cutoff` to the **exclusive next-UTC-midnight boundary**, and creates the fresh attempt ID. The wall-clock execution date must not create a different stable run ID for the same completed research day.
+Provider-facing Massive `call_api` requests are governed by `config/massive-request-policy.json` and `scripts/control_plane/massive_request_gate.py`. Initialize one attempt-scoped request ledger before the first authenticated probe, obtain a permit before every provider call, and record each result immediately. A Massive `RATE_LIMIT` warning taints the attempt; later successful retries do not erase the violation. Control/workspace operations such as endpoint search, workspace management, and local queries are outside the provider-call budget unless policy says otherwise.
 
-If no existing interpreter executes and uv is available, bootstrap may perform one bounded self-repair: provision CPython 3.12 under this repository's `.runtime/python` directory with no system PATH/global installation. The newly provisioned executable must pass the same probe. If bootstrap still returns BLOCKED, make **zero Massive provider calls**, preserve the full candidate/provisioning evidence, and report remediation. If bootstrap returns READY, bind the attempt to the emitted runtime descriptor, validate it against `schemas/python_runtime.schema.json`, and invoke every repository Python script through `scripts/control_plane/run_python.cmd -RuntimeFile <attempt-runtime.json>`. Never invoke `run_python.ps1` directly from an execution-policy-restricted shell. Do not fall back to bare `python` later in the same attempt.
+On Windows, structured request/result payloads and durable materialization metadata are file-bound. Pass provider parameters/completion metadata via `--request-file` / `--result-file`. Persist materialization inputs in a spec conforming to `schemas/massive_materialization_spec.schema.json` and invoke `scripts/control_plane/materialize_mcp_dataset.cmd <runtime.json> <spec.json>`. Do not embed structured JSON, timestamps, templates, or materialization metadata directly in PowerShell command lines.
 
-Provider-facing Massive `call_api` requests are governed by `config/massive-request-policy.json` and `scripts/control_plane/massive_request_gate.py`. On Windows, structured request parameters and provider completion metadata MUST be passed through JSON files (`--request-file` / `--result-file`); do not put JSON objects or warning envelopes directly on a PowerShell command line. Initialize one attempt-scoped request ledger before the first authenticated data probe. Obtain a permit before every `call_api`; the gate serializes starts and enforces the rolling request cap. Record each outcome immediately. A Massive `RATE_LIMIT` warning taints the attempt and requires a fresh attempt; later successful retries do not erase the process violation. `search_endpoints`, `workspace`, and `query_data` are MCP control/local-workspace operations and are outside this provider-call budget unless the policy is explicitly changed.
+## Evidence-set and temporal integrity
 
-On Windows, **durable materialization metadata is also file-bound**. Persist one attempt-scoped materialization spec conforming to `schemas/massive_materialization_spec.schema.json` and invoke `scripts/control_plane/materialize_mcp_dataset.cmd <runtime.json> <spec.json>`; the wrapper binds the attempt runtime and calls `materialize_mcp_dataset.py --spec-file` internally. Do not pass timestamps, endpoint templates containing `{...}`, JSON parameter objects, row counts, sort/key fields, or dataset metadata inline through PowerShell. The spec file is the authoritative materialization input and must be preserved with the attempt staging evidence.
+Treat `docs/data-capability-boundary.md` as the evidence boundary and `docs/massive-mcp-data-plane.md` as the acquisition contract.
 
-## Ownership boundaries
+Every durable materialization must declare `evidence_role` as `RESEARCH_INPUT` or `DIAGNOSTIC`. After acquisition sealing, run `scripts/control_plane/reconcile_materializations.py`. Unmanifested or unclassified `RESEARCH_INPUT` materializations block the run. `DIAGNOSTIC` materializations are evidence only and must never enter deterministic pipeline inputs. The acquisition manifest schema is `schemas/massive_acquisition_manifest.schema.json`; do not invent shorter schema names.
 
-Use Massive MCP for external Massive data discovery/retrieval and transient MCP workspace operations.
+The run information set is immutable after sealing. A subagent may inspect the fixed artifacts it is given, but it must not introduce a fresh post-cutoff observation into the deterministic run. Any later lookup is diagnostic unless a governed fresh attempt explicitly incorporates it.
 
-Do not assume optional developer CLIs such as `rg` are installed. For repository text search on Windows, use `scripts\control_plane\search_repo.cmd` or native `Get-ChildItem ... | Select-String`; `rg` is only an optional optimization.
+The half-open UTC-day contract is authoritative: an observation belongs to the research day iff its effective timestamp is strictly `< research_cutoff`. `23:59:59.999Z` on the research date is valid; `00:00:00Z` at the next UTC day is not. Never require an EOD provider bar to end exactly at the cutoff.
 
-Use deterministic code/SQL for durable MCP materialization, row-count/digest checks, normalization, research-cutoff checks, joins, feature calculation, ranking, regressions, bootstrap/resampling, multiple-testing correction, scoring, persistence, immutable sealing, and research-state transitions. A model recommendation or tool result is evidence, not a state transition.
+## Research and model-risk discipline
 
-Use model reasoning for hypothesis formation, interpretation, anomaly investigation, independent review, adversarial critique, and explanation.
+Preregister material hypotheses before broad parameter search. Preserve the exact hypothesis, universe, target, horizon, primary metric, registered sensitivities, data identity, code/config identity, and tested-family ledger.
 
-Agent or Skill instructions never grant runtime authority. Filesystem, shell, network, MCP/app, secret, approval, and external-write permissions remain controlled by Codex/runtime policy. OAuth credentials are host-owned; do not copy credentials into repository files.
+Treat research as a search process:
 
-## Research discipline
+- preserve failed, rejected, inconclusive, invalid, and unattractive variants;
+- do not cherry-pick the best specification and erase the search family;
+- keep discovery separate from independent validation;
+- respect temporal train/validation/test or walk-forward boundaries;
+- do not reuse reserved holdout/OOS outcomes for model selection unless the registered design explicitly permits it;
+- apply repository-authorized dependence-aware uncertainty, multiple-testing, selection-bias/backtest-overfitting, cost, liquidity, capacity, and robustness controls;
+- do not invent statistical thresholds absent from authoritative repository policy;
+- report unsupported causal claims, small-sample uncertainty, degraded coverage, and unavailable evidence explicitly.
 
-- Treat `docs/data-capability-boundary.md` as the evidence boundary.
-- Treat `docs/massive-mcp-data-plane.md` as the acquisition contract.
-- Preregister a hypothesis before broad parameter search.
-- Keep discovery/research separate from independent validation.
-- Never let the factor researcher approve its own candidate.
-- Never promote from prose alone; promotion requires deterministic gate evidence.
-- Freeze each forecast before its target outcome exists.
-- Preserve failed, rejected, inconclusive, and invalid experiments.
-- Report uncertainty and unsupported claims explicitly.
-- Do not let a fresh post-cutoff MCP observation leak into a frozen run merely because a subagent can access the same MCP server.
+A candidate is not promoted because an agent says `PROMOTE`. `PROMOTE` from validation means only that the candidate may proceed to `$candidate-promotion`; the actual state transition must be repository-owned, identity-bound, and deterministic.
 
-## Multi-agent use
+Treat material discretionary CIO overlays as model-use changes. They require explicit rationale, identity binding, sensitivity/materiality assessment, and independent challenge; an overlay may not bypass a failed gate.
 
-Spawn subagents when the user explicitly requests delegation or when an activated control-plane workflow requires a named independent role. Do not delegate ordinary work merely because custom agents exist. Prefer independent read-heavy analysis in parallel, then a synthesis barrier.
+## Daily fund lifecycle and multi-agent use
 
-Daily workflow: primary thread creates a fresh attempt, runs the native Windows bootstrap when applicable, binds a working deterministic runtime, runs local Python preflight through that runtime, initializes the Massive request ledger, probes effective Massive access through the request gate, acquires/stages the fixed source set through that same gate, durably materializes and seals it, then `data-steward` audits that fixed set. Repository code runs the deterministic daily pipeline before `crypto-internals`, `relative-value`, `macro-regime`, and `institutional-intelligence` analyze its outputs in parallel; then `portfolio-risk`; then `methodology-auditor`; primary thread seals/audits the request ledger and freezes the deterministic forecast payload only when both request compliance and methodology review pass.
+Spawn subagents only for bounded independent work that benefits from separate context or required organizational independence. Keep dependent state transitions and final synthesis in the root thread. Do not delegate ordinary work merely because custom agents exist. Do not let child agents recursively spawn agents unless the user explicitly changes that boundary.
 
-Research workflow: primary thread fixes any required source snapshot through Massive MCP; `factor-researcher` -> `statistical-validator` -> `methodology-auditor`; the primary thread adjudicates from artifacts and deterministic gate results.
+Use parallelism only after shared inputs are fixed. Avoid concurrent writes to the same authoritative artifact.
 
-Do not allow child agents to recursively spawn agents unless a user explicitly changes that boundary.
+The governed daily order is:
 
-## Evidence
+1. root/CIO activates `$crypto-fund-cio` / `$daily-research-run`, creates the attempt, bootstraps runtime, completes preflight, initializes provider-call governance, acquires/materializes the source set, reconciles provenance, and seals the evidence snapshot;
+2. `data-steward` independently returns `PASS`, `DEGRADED`, or `BLOCK`;
+3. repository deterministic code produces the authoritative daily research proposal;
+4. when their inputs are fixed, `macro-regime`, `crypto-internals`, `relative-value`, and `institutional-intelligence` may analyze in parallel;
+5. `portfolio-risk` independently evaluates aggregate research risk;
+6. `methodology-auditor` independently audits the complete evidence chain and any material overlay;
+7. `investment-committee-challenger` performs portfolio-level contradiction, shared-failure-mode, and falsification review; prefer an evidence-first pass before exposing it to the CIO narrative when practicable;
+8. root/CIO reconciles surviving evidence, seals/audits provider-call compliance, and freezes the deterministic forecast only if every required hard gate passes.
 
-Prefer actual artifacts, Massive MCP call evidence, sealed acquisition manifests, and executed checks over agent summaries. When completing work, report changed files, commands actually run, outcomes, and unresolved blockers.
+No number of agreeing agents can override a failed hard gate.
 
+## Alpha R&D and promotion lifecycle
 
-## Materialization provenance closure
+The governed alpha sequence is:
 
-Every durable materialization must declare `evidence_role` as `RESEARCH_INPUT` or `DIAGNOSTIC`. After acquisition sealing, run `scripts/control_plane/reconcile_materializations.py`; unmanifested/unclassified RESEARCH_INPUT materializations are blocking. DIAGNOSTIC materializations are evidence only and must never enter deterministic pipeline inputs.
+`factor-researcher` → `statistical-validator` → `methodology-auditor` → `$candidate-promotion`.
 
-**Component-location contract:** named independent reviewer roles such as `data-steward` are Codex agents under `.codex/agents/<name>.toml`, not Skills under `.agents/skills/`. The acquisition schema is `schemas/massive_acquisition_manifest.schema.json`. Do not invent shorter schema filenames or Skill paths; use the repository search helper when uncertain.
+Bind every stage to the same candidate/hypothesis/data/code identities. New post-result changes to hypothesis, universe, target, horizon, transform, parameter grid, or primary metric create a new experiment/version rather than retroactively changing the registered experiment.
 
+Promotion is never a prose-only action and never occurs inside a researcher, validator, auditor, or CIO narrative.
 
-**Half-open UTC-day contract:** `research_cutoff` is an exclusive boundary at the start of the next UTC day. An observation belongs to the research day iff its effective timestamp is strictly `< research_cutoff`. Thus `2026-09-28T23:59:59.999Z` is valid for the 2026-09-28 run, while `2026-09-29T00:00:00Z` is not. Never require an EOD provider bar to end exactly at the cutoff.
+## OOS scorekeeping and performance governance
+
+Freeze each forecast before its target outcome exists. Score only matured outcomes through repository-owned `$oos-scorekeeping` mechanisms. Never rewrite frozen forecasts or realized history to improve apparent performance.
+
+Performance reviews must bind the review population before inspecting results: identities, universe/assets, horizons, date range, maturity rules, and inclusion/exclusion criteria. Exclude unmatured outcomes rather than scoring them as failures.
+
+`performance-governor` / `$performance-governance` may assess calibration, realized costs, drift, regime stability, concentration, tail behavior, and continued-use evidence. Repeated ad hoc peeking must not become an unregistered stopping or retirement rule; use repository-defined monitoring policy when present, otherwise report the governance gap.
+
+Continue/review/quarantine/retirement conclusions are advisory unless repository policy and deterministic state-transition mechanisms authorize the corresponding change.
+
+## Handoff and evidence standard
+
+Every consequential agent handoff must identify the exact run/attempt/candidate/evidence identity, separate observed facts from interpretation, state coverage and uncertainty, surface contradictions, cite inspectable repository evidence paths, and end with a bounded status or next authorized action. Confidence language never substitutes for missing evidence.
+
+Prefer, in order:
+
+1. authoritative policy/config/schema and immutable identity;
+2. sealed manifests, deterministic artifacts, ledgers, and executed checks;
+3. agent findings tied to inspectable evidence;
+4. narrative interpretation.
+
+When evidence conflicts, investigate the conflict rather than averaging conclusions.
+
+When completing repository work, report changed files, commands actually run, observed outcomes, pre-existing versus introduced failures where knowable, and unresolved blockers.
+
+Do not assume optional developer CLIs such as `rg` are installed. On Windows use `scripts\control_plane\search_repo.cmd` or native `Get-ChildItem ... | Select-String`; `rg` is only an optional optimization.
+
+## Live-execution boundary
+
+This repository is a **research and portfolio-decision control plane**, not a brokerage execution system. No Skill, subagent, CIO conclusion, forecast artifact, or portfolio proposal grants authority to transmit orders, rebalance accounts, move collateral, or mutate live brokerage/exchange state.
+
+Live trading requires a separate explicitly authorized execution control plane with account/venue identity, pre-trade risk, order validation and idempotency, best-execution/TCA policy, reconciliation, kill switches, permission controls, and externally observable completion evidence.
