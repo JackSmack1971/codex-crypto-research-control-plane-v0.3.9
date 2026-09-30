@@ -1,0 +1,39 @@
+{
+  "arguments_digest": "sha256:98a89d0a7c1c80e95b59fb80a2ddbfa6aed0896df69a81c912204f917b83ecd6",
+  "capability_id": "fin.crypto.index_candles",
+  "content_type": "text/event-stream",
+  "deployment_id": "dep-datvbjflk1mc73d3pitg",
+  "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+  "http_status": 200,
+  "isError": false,
+  "pagination_complete": true,
+  "permit_id": "fdp-b45a94d1cc2a40f4a20063b53241464c",
+  "protocol_method": "tools/call",
+  "raw_response_digest": "sha256:04e0b43141a403d31c98281feaa31add076e34ccf95acedbbd6175f7a7d1c6be",
+  "received_at": "2026-09-30T03:55:44.971Z",
+  "request_id": "fin-3b49773a62fc4cb987f0722663c2a814",
+  "requested_at": "2026-09-30T03:55:41.908Z",
+  "result": {
+    "content": [
+      {
+        "text": "[\n  [\n    \"1790737200000\",\n    \"83348.1\",\n    \"83391.3\",\n    \"83129.2\",\n    \"83274.7\",\n    \"0\"\n  ]\n]",
+        "type": "text"
+      }
+    ],
+    "structuredContent": {
+      "data": [
+        [
+          "1790737200000",
+          "83348.1",
+          "83391.3",
+          "83129.2",
+          "83274.7",
+          "0"
+        ]
+      ]
+    }
+  },
+  "schema_version": "1.0",
+  "source_id": "fin_data_mcp_render_prod",
+  "tool_name": "crypto_index_candles"
+}

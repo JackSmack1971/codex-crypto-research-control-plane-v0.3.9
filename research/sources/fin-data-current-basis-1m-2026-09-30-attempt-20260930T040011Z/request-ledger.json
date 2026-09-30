@@ -1,0 +1,120 @@
+{
+  "attempt_id": "fin-data-current-basis-1m-2026-09-30-attempt-20260930T040011Z",
+  "calls": [
+    {
+      "arguments": {
+        "capabilities": {},
+        "clientInfo": {
+          "name": "fin-data-governed-source",
+          "version": "0.1.0"
+        },
+        "protocolVersion": "2024-11-05"
+      },
+      "arguments_digest": "sha256:b8893e25ad51147216d879ad93d670f09f575a43253e9511c04ace125cfe2e6e",
+      "capability_id": "fin.mcp.initialize",
+      "completed_at": "2026-09-30T04:02:27.214Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-3a3d951a1d2a4e3bad8693ac0050c15a",
+      "permitted_at": "2026-09-30T04:02:24.641Z",
+      "request_id": "fin-ede470cd8bfe4baaae6b088f7523d64a",
+      "result_digest": "sha256:58fac4bd00a3db2eaab4415c35bd020f7e8c69ff97d41f4a20e50ce70a63b5ca",
+      "tool_name": "initialize"
+    },
+    {
+      "arguments": {},
+      "arguments_digest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "capability_id": "fin.mcp.initialized_notification",
+      "completed_at": "2026-09-30T04:02:28.283Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-288130f5718a45d0a065da7890516818",
+      "permitted_at": "2026-09-30T04:02:27.936Z",
+      "request_id": "fin-a06acdd054124ab1965a8d8bffe684df",
+      "result_digest": "sha256:aab39f548ac4a234d0087aa23f6cdee91ef7365b247df0d2e0ae65795f2e5b61",
+      "tool_name": "notifications/initialized"
+    },
+    {
+      "arguments": {},
+      "arguments_digest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "capability_id": "fin.mcp.tools_list",
+      "completed_at": "2026-09-30T04:02:32.957Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-b909157ab93242798946f9e20f1be4fb",
+      "permitted_at": "2026-09-30T04:02:29.003Z",
+      "request_id": "fin-df38c4667361400bb18f329fbb3aa52e",
+      "result_digest": "sha256:977558737c7d3b1fd49b51417c4a35ceadf426ca812ed70620267e7f0fb992e4",
+      "tool_name": "tools/list"
+    },
+    {
+      "arguments": {
+        "arguments": {
+          "bar": "1m",
+          "instId": "BTC-USDT",
+          "limit": 3
+        },
+        "name": "crypto_candles"
+      },
+      "arguments_digest": "sha256:562c74bf4d94a2ee42fc8f477e26cfa89c12640881ea605f30b1dac4407f3731",
+      "capability_id": "fin.crypto.candles",
+      "completed_at": "2026-09-30T04:02:36.731Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-a48ea039b1124368976855a15fe804e8",
+      "permitted_at": "2026-09-30T04:02:33.706Z",
+      "request_id": "fin-ff422e71285d4eb690cdd995efd171c6",
+      "result_digest": "sha256:5ffe73e0b95e02bb7ecc54753717a20c438b7f97c736df1260a35ce99890b202",
+      "tool_name": "crypto_candles"
+    },
+    {
+      "arguments": {
+        "arguments": {
+          "bar": "1m",
+          "instId": "BTC-USDT-SWAP",
+          "limit": 3
+        },
+        "name": "crypto_candles"
+      },
+      "arguments_digest": "sha256:93aab3c7a95d54565baaf8acbea0904a444016722112d4b80e387343afaa499f",
+      "capability_id": "fin.crypto.candles",
+      "completed_at": "2026-09-30T04:02:40.615Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-70a52c4de9434ab9a404c7b7ec56a3b0",
+      "permitted_at": "2026-09-30T04:02:37.541Z",
+      "request_id": "fin-1fa1acfd146145b5bb2e259b8eddffca",
+      "result_digest": "sha256:e622c3620a705d3fcee0771885e3d0bdf13e0b430de1f18faadc58e30b5e9785",
+      "tool_name": "crypto_candles"
+    },
+    {
+      "arguments": {
+        "arguments": {
+          "bar": "1m",
+          "instId": "BTC-USD",
+          "limit": 3
+        },
+        "name": "crypto_index_candles"
+      },
+      "arguments_digest": "sha256:b66b6e97e1ad8700ba32c121f9d03ad5ca31cce1ec7981d6394c31d2e437bad8",
+      "capability_id": "fin.crypto.index_candles",
+      "completed_at": "2026-09-30T04:02:44.407Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-eb60d91e4ba8457c8fdbabb1131914fa",
+      "permitted_at": "2026-09-30T04:02:41.352Z",
+      "request_id": "fin-968cf4807f8f4bf6a4a1c063782afc8b",
+      "result_digest": "sha256:ab1d4b3555c84db1cd1a30405bf416031955fcad85796e3cc6ee1c01b1c5f549",
+      "tool_name": "crypto_index_candles"
+    }
+  ],
+  "content_digest": "sha256:4a98db2e5cc199a7946802ab8e9c2ff7e70d1bc437968a1bdf5cb11fe68edd6d",
+  "created_at": "2026-09-30T04:02:11.459Z",
+  "diagnostic_policy_digest": "sha256:d4a58d888b51da13560927bc1e2ae1bd8f3252ce63b6bd26dec76e92a040c5a5",
+  "policy_digest": "sha256:7e0823a763cae1a885578792de4dc53ba0392e2019b23368d8b7476b2e12860a",
+  "schema_version": "1.0",
+  "sealed_at": "2026-09-30T04:03:01.307Z",
+  "source_id": "fin_data_mcp_render_prod",
+  "status": "SEALED",
+  "tainted": false
+}

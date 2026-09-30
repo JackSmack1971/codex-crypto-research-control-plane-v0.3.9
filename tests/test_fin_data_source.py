@@ -72,6 +72,26 @@ class FinDataQualificationTests(unittest.TestCase):
         self.assertEqual("DEGRADED", status["status"])
         self.assertEqual("representative_response_stale", status["reason"])
 
+    def test_response_received_after_qualification_time_is_blocked(self):
+        cap = self.config["capabilities"][0]
+        self.snapshot["representative_results"][cap["capability_id"]]["received_at"] = "2026-09-29T12:00:01Z"
+        result = _evaluate_qualification(self.snapshot, self.config, self.now, self.test_contracts)
+        status = result["capabilities"][cap["capability_id"]]
+        self.assertEqual("BLOCKED", status["status"])
+        self.assertEqual("representative_received_after_qualification_time", status["reason"])
+
+    def test_ledger_completion_after_qualification_time_blocks_report(self):
+        capture = ROOT / "research/sources/fin-data-current-qualification-2026-09-30-attempt-20260930T035157Z"
+        report = json.loads((capture / "qualification-report-current.json").read_text(encoding="utf-8"))
+        ledger = json.loads((capture / "request-ledger.json").read_text(encoding="utf-8"))
+        snapshot = assemble_capture(capture)
+        snapshot["verified_request_ledger"] = ledger
+        ledger["calls"][0]["completed_at"] = "2026-09-30T04:00:12Z"
+        ledger["content_digest"] = digest({key: value for key, value in ledger.items() if key != "content_digest"})
+        result = qualify(snapshot, self.config, report["observed_at"], ledger)
+        self.assertEqual("BLOCKED", result["status"])
+        self.assertIn("ledger_completion_after_qualification_time", result["ledger_errors"])
+
     def test_schema_drift_fails_closed(self):
         cap = self.config["capabilities"][0]
         row = self.snapshot["representative_results"][cap["capability_id"]]["structuredContent"]["rows"][0]
@@ -247,6 +267,26 @@ class FinDataQualificationTests(unittest.TestCase):
         bundle = build_bundle([selected], "2026-09-30-eod", "fin-data-prod-probe-2026-09-30-v2",
                               "2026-10-01T00:00:00Z", materialized)
         self.assertEqual([], validate_bundle(bundle, materialized))
+
+    def test_fresh_current_capture_replays_degraded_with_instrument_discovery_blocked(self):
+        capture = ROOT / "research/sources/fin-data-current-qualification-2026-09-30-attempt-20260930T035157Z"
+        report = json.loads((capture / "qualification-report-current.json").read_text(encoding="utf-8"))
+        ledger = json.loads((capture / "request-ledger.json").read_text(encoding="utf-8"))
+        snapshot = assemble_capture(capture)
+        snapshot["verified_request_ledger"] = ledger
+        replayed = qualify(snapshot, self.config, report["observed_at"], ledger)
+        self.assertEqual(report["snapshot_digest"], replayed["snapshot_digest"])
+        self.assertEqual("AVAILABLE", replayed["endpoint_status"])
+        self.assertEqual("DEGRADED", replayed["status"])
+        self.assertEqual(9, sum(item["status"] == "QUALIFIED" for item in replayed["capabilities"].values()))
+        self.assertEqual("pagination_completion_unverified",
+                         replayed["capabilities"]["fin.crypto.instrument_discovery"]["reason"])
+        self.assertEqual("QUALIFIED", replayed["capabilities"]["fin.crypto.candles"]["status"])
+        self.assertTrue(all(not item["admitted"] for item in replayed["capabilities"].values()))
+        self.assertEqual("SEALED", ledger["status"])
+        self.assertFalse(ledger["tainted"])
+        self.assertEqual(16, len(ledger["calls"]))
+        self.assertEqual(report["ledger_digest"], ledger["content_digest"])
 
     def test_unprobed_source_seals_explicit_blocked_manifest_without_fabricated_rows(self):
         cap = self.config["capabilities"][0]

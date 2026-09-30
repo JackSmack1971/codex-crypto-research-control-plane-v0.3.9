@@ -1,0 +1,55 @@
+{
+  "arguments_digest": "sha256:b66b6e97e1ad8700ba32c121f9d03ad5ca31cce1ec7981d6394c31d2e437bad8",
+  "capability_id": "fin.crypto.index_candles",
+  "content_type": "text/event-stream",
+  "deployment_id": "dep-datvbjflk1mc73d3pitg",
+  "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+  "http_status": 200,
+  "isError": false,
+  "pagination_complete": true,
+  "permit_id": "fdp-eb60d91e4ba8457c8fdbabb1131914fa",
+  "protocol_method": "tools/call",
+  "raw_response_digest": "sha256:761780bc91530879a27ef799780f14dcbf1246769b27515da36d17f9de36549d",
+  "received_at": "2026-09-30T04:02:44.282Z",
+  "request_id": "fin-968cf4807f8f4bf6a4a1c063782afc8b",
+  "requested_at": "2026-09-30T04:02:41.224Z",
+  "result": {
+    "content": [
+      {
+        "text": "[\n  [\n    \"1790740920000\",\n    \"83303.9\",\n    \"83345.3\",\n    \"83302.7\",\n    \"83342.8\",\n    \"0\"\n  ],\n  [\n    \"1790740860000\",\n    \"83295.5\",\n    \"83303.8\",\n    \"83282\",\n    \"83303.4\",\n    \"1\"\n  ],\n  [\n    \"1790740800000\",\n    \"83271.3\",\n    \"83301\",\n    \"83263.7\",\n    \"83295.5\",\n    \"1\"\n  ]\n]",
+        "type": "text"
+      }
+    ],
+    "structuredContent": {
+      "data": [
+        [
+          "1790740920000",
+          "83303.9",
+          "83345.3",
+          "83302.7",
+          "83342.8",
+          "0"
+        ],
+        [
+          "1790740860000",
+          "83295.5",
+          "83303.8",
+          "83282",
+          "83303.4",
+          "1"
+        ],
+        [
+          "1790740800000",
+          "83271.3",
+          "83301",
+          "83263.7",
+          "83295.5",
+          "1"
+        ]
+      ]
+    }
+  },
+  "schema_version": "1.0",
+  "source_id": "fin_data_mcp_render_prod",
+  "tool_name": "crypto_index_candles"
+}

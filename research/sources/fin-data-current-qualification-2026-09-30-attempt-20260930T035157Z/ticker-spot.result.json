@@ -1,0 +1,49 @@
+{
+  "arguments_digest": "sha256:a4281b99574780f18fbf2d7972b6d18ef8a902b7cf1fcce5abbe198cce718301",
+  "capability_id": "fin.crypto.ticker",
+  "content_type": "text/event-stream",
+  "deployment_id": "dep-datvbjflk1mc73d3pitg",
+  "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+  "http_status": 200,
+  "isError": false,
+  "pagination_complete": true,
+  "permit_id": "fdp-79dc5e8f18d34a70b3546ec4f75c269a",
+  "protocol_method": "tools/call",
+  "raw_response_digest": "sha256:bcb348227a6a1d7e519526445a47a98b0d36909ee464935833c2bf9a936f71a0",
+  "received_at": "2026-09-30T03:55:20.683Z",
+  "request_id": "fin-c463925176c8433888e5f698cc5f0605",
+  "requested_at": "2026-09-30T03:55:17.534Z",
+  "result": {
+    "content": [
+      {
+        "text": "[\n  {\n    \"instType\": \"SPOT\",\n    \"instId\": \"BTC-USDT\",\n    \"last\": \"83320.1\",\n    \"lastSz\": \"0.00001887\",\n    \"askPx\": \"83320.1\",\n    \"askSz\": \"1.12557423\",\n    \"bidPx\": \"83320\",\n    \"bidSz\": \"0.05364157\",\n    \"open24h\": \"83105.9\",\n    \"high24h\": \"84557.8\",\n    \"low24h\": \"82902.8\",\n    \"volCcy24h\": \"412610350.583428301\",\n    \"vol24h\": \"4933.5192796\",\n    \"ts\": \"1790740518769\",\n    \"sodUtc0\": \"83663.9\",\n    \"sodUtc8\": \"83080.2\"\n  }\n]",
+        "type": "text"
+      }
+    ],
+    "structuredContent": {
+      "data": [
+        {
+          "askPx": "83320.1",
+          "askSz": "1.12557423",
+          "bidPx": "83320",
+          "bidSz": "0.05364157",
+          "high24h": "84557.8",
+          "instId": "BTC-USDT",
+          "instType": "SPOT",
+          "last": "83320.1",
+          "lastSz": "0.00001887",
+          "low24h": "82902.8",
+          "open24h": "83105.9",
+          "sodUtc0": "83663.9",
+          "sodUtc8": "83080.2",
+          "ts": "1790740518769",
+          "vol24h": "4933.5192796",
+          "volCcy24h": "412610350.583428301"
+        }
+      ]
+    }
+  },
+  "schema_version": "1.0",
+  "source_id": "fin_data_mcp_render_prod",
+  "tool_name": "crypto_ticker"
+}

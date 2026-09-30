@@ -273,7 +273,9 @@ def _evaluate_qualification(snapshot: dict[str, Any], capabilities: dict[str, An
                         if cutoff.utcoffset() is None or observation.utcoffset() is None or received.utcoffset() is None:
                             raise ValueError("timezone_required")
                         age = int((received - observation).total_seconds())
-                        if age < 0:
+                        if received > cutoff:
+                            state, why = "BLOCKED", "representative_received_after_qualification_time"
+                        elif age < 0:
                             state, why = "BLOCKED", "representative_observation_in_future"
                         elif not isinstance(max_age, int) or max_age < 0:
                             state, why = "BLOCKED", "freshness_limit_unregistered"
@@ -334,6 +336,17 @@ def qualify(snapshot: dict[str, Any], capabilities: dict[str, Any], now: str,
                           "reason": "verified_request_ledger_required"})
         return result
     ledger_errors = _bind_snapshot_to_ledger(snapshot, ledger)
+    try:
+        qualification_time = parse_timestamp(now, "qualification.now")
+        if qualification_time.utcoffset() is None:
+            raise ValueError("timezone_required")
+        for call in ledger.get("calls", []):
+            completed_at = parse_timestamp(call.get("completed_at"), "ledger.completed_at")
+            if completed_at.utcoffset() is None or completed_at > qualification_time:
+                ledger_errors.append("ledger_completion_after_qualification_time")
+                break
+    except (ValueError, TypeError, AttributeError):
+        ledger_errors.append("ledger_completion_time_invalid")
     result = _evaluate_qualification(snapshot, capabilities, now, contract_registry)
     result["ledger_digest"] = ledger.get("content_digest")
     result["ledger_errors"] = ledger_errors
@@ -610,7 +623,7 @@ def main() -> int:
     qualification.add_argument("snapshot")
     qualification.add_argument("--now", required=True)
     qualification.add_argument("--ledger", required=True)
-    qualification.add_argument("--out", required=True)
+    qualification.add_argument("--out", "--output", dest="out", required=True)
     materialization = sub.add_parser("materialize")
     materialization.add_argument("snapshot")
     materialization.add_argument("--capability-id", required=True)
@@ -625,7 +638,7 @@ def main() -> int:
     verification.add_argument("manifest")
     assembly = sub.add_parser("assemble-snapshot")
     assembly.add_argument("--input-dir", required=True)
-    assembly.add_argument("--out", required=True)
+    assembly.add_argument("--out", "--output", dest="out", required=True)
     args = parser.parse_args()
     try:
         if args.command == "verify":

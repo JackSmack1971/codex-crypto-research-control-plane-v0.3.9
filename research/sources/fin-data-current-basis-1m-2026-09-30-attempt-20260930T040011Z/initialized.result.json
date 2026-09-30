@@ -1,0 +1,23 @@
+{
+  "arguments_digest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "capability_id": "fin.mcp.initialized_notification",
+  "content_type": "text/plain; charset=UTF-8",
+  "deployment_id": "dep-datvbjflk1mc73d3pitg",
+  "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+  "http_status": 202,
+  "isError": false,
+  "pagination_complete": true,
+  "permit_id": "fdp-288130f5718a45d0a065da7890516818",
+  "protocol_method": "notifications/initialized",
+  "raw_response_digest": "sha256:3ba6321e53d69bb1e6fb40c00a30cdb6f83e0d73abe1b67e1438bbf400d74e3e",
+  "received_at": "2026-09-30T04:02:28.157Z",
+  "request_id": "fin-a06acdd054124ab1965a8d8bffe684df",
+  "requested_at": "2026-09-30T04:02:27.823Z",
+  "result": {
+    "http_status": 202,
+    "notification_acknowledged": true
+  },
+  "schema_version": "1.0",
+  "source_id": "fin_data_mcp_render_prod",
+  "tool_name": "notifications/initialized"
+}

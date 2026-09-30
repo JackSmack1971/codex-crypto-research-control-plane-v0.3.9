@@ -75,6 +75,22 @@ class FinDataBasisDerivationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "basis_input_timestamp_not_minute_aligned"):
             _bar_map([["1790739030000", "1", "1", "1", "1", "1", "1", "1", "1"]], 9, 8)
 
+    def test_fresh_current_basis_capture_replays_diagnostic_artifact(self):
+        capture = ROOT / "research/sources/fin-data-current-basis-1m-2026-09-30-attempt-20260930T040011Z"
+        spot = json.loads((capture / "candles-spot.result.json").read_text(encoding="utf-8"))
+        perpetual = json.loads((capture / "candles-swap.result.json").read_text(encoding="utf-8"))
+        index = json.loads((capture / "index-candles.result.json").read_text(encoding="utf-8"))
+        ledger = json.loads((capture / "request-ledger.json").read_text(encoding="utf-8"))
+        expected = json.loads((capture / "basis-observation.json").read_text(encoding="utf-8"))
+        replayed = derive(spot, perpetual, index, ledger, "2026-10-01T00:00:00Z")
+        schema = json.loads((ROOT / "schemas/fin_data_basis_observation.schema.json").read_text(encoding="utf-8"))
+        self.assertEqual([], validate(replayed, schema))
+        self.assertEqual(expected, replayed)
+        self.assertEqual("DIAGNOSTIC", replayed["evidence_role"])
+        self.assertEqual("NOT_ADMITTED", replayed["admissibility"])
+        self.assertEqual("-39.6", replayed["spot_perpetual_basis"]["absolute"])
+        self.assertEqual("-4.751494", replayed["spot_perpetual_basis"]["basis_points_of_spot"])
+
 
 if __name__ == "__main__":
     unittest.main()
