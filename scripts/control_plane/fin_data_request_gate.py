@@ -77,8 +77,12 @@ def main() -> int:
         if ledger.get("status") != "OPEN" or ledger.get("tainted"):
             print("LEDGER_HALTED_OR_CLOSED"); return 4
         if args.command == "permit":
+            policy = _read(ROOT / "config/fin-data-request-policy.json")
             caps = _read(ROOT / "config/source-capabilities/fin-data.json")["capabilities"]
             allowed = next((item for item in caps if item["capability_id"] == args.capability_id), None)
+            if allowed is None:
+                allowed = next((item for item in policy["control_operations"]
+                                if item["capability_id"] == args.capability_id), None)
             if allowed is None or allowed["tool_name"] != args.tool_name:
                 print("REQUEST_NOT_REGISTERED"); return 4
             if not args.request_id or any(item["request_id"] == args.request_id for item in ledger["calls"]):

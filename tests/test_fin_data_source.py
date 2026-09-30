@@ -128,7 +128,9 @@ class FinDataQualificationTests(unittest.TestCase):
         snapshot = {"endpoint_url": self.config["runtime"], "deployment_id": "dep-prod-1",
                     "representative_results": {cap["capability_id"]: {
                         "observed_at": "2026-09-29T11:59:59Z", "request_envelope": envelope}}}
-        self.assertEqual([], _bind_snapshot_to_ledger(snapshot, ledger))
+        errors = _bind_snapshot_to_ledger(snapshot, ledger)
+        self.assertEqual({"mcp_control_operation_missing:fin.mcp.initialize",
+                          "mcp_control_operation_missing:fin.mcp.tools_list"}, set(errors))
         bound = snapshot["representative_results"][cap["capability_id"]]
         self.assertEqual(envelope["received_at"], bound["observed_at"])
         self.assertTrue(bound["pagination_complete"])

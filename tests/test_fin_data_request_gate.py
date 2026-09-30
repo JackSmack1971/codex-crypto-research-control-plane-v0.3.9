@@ -61,6 +61,19 @@ class FinDataRequestGateTests(unittest.TestCase):
                                    "--tool-name", "crypto_ticker", "--request-id", "req-2", "--arguments-file", arguments)
             self.assertEqual(4, second.returncode)
 
+    def test_mcp_initialization_and_catalog_have_governed_operation_identities(self):
+        for capability_id, tool_name in (("fin.mcp.initialize", "initialize"),
+                                         ("fin.mcp.tools_list", "tools/list")):
+            with self.subTest(operation=tool_name), tempfile.TemporaryDirectory() as td:
+                ledger = Path(td) / "ledger.json"
+                arguments = Path(td) / "args.json"
+                arguments.write_text("{}", encoding="utf-8")
+                self.run_gate("init", "--attempt-id", "attempt-control", "--ledger", ledger)
+                permit = self.run_gate("permit", "--ledger", ledger, "--capability-id", capability_id,
+                                       "--tool-name", tool_name, "--request-id", "req-control",
+                                       "--arguments-file", arguments)
+                self.assertEqual(0, permit.returncode, permit.stdout + permit.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -66,6 +66,38 @@ def _bind_snapshot_to_ledger(snapshot: dict[str, Any], ledger: dict[str, Any]) -
     errors = _verify_ledger(ledger)
     calls = {item.get("request_id"): item for item in ledger.get("calls", [])}
     contracts = {item["capability_id"]: item for item in _read(ROOT / "config/fin-data-response-contracts.json")["contracts"]}
+    for operation_id, operation_name, key in (
+        ("fin.mcp.initialize", "initialize", "initialization_envelope"),
+        ("fin.mcp.tools_list", "tools/list", "catalog_envelope"),
+    ):
+        envelope = snapshot.get(key)
+        if not isinstance(envelope, dict):
+            errors.append(f"mcp_control_operation_missing:{operation_id}")
+            continue
+        call = calls.get(envelope.get("request_id"))
+        if (not call or call.get("capability_id") != operation_id or call.get("tool_name") != operation_name
+                or call.get("result_digest") != digest(envelope)
+                or call.get("permit_id") != envelope.get("permit_id")
+                or call.get("endpoint_url") != envelope.get("endpoint_url")
+                or call.get("arguments_digest") != envelope.get("arguments_digest")
+                or envelope.get("source_id") != ledger.get("source_id")
+                or envelope.get("endpoint_url") != snapshot.get("endpoint_url")
+                or envelope.get("deployment_id") != snapshot.get("deployment_id")):
+            errors.append(f"mcp_control_operation_ledger_binding_invalid:{operation_id}")
+            continue
+        if envelope.get("isError") is not False:
+            errors.append(f"mcp_control_operation_failed:{operation_id}")
+        elif operation_id == "fin.mcp.initialize":
+            snapshot["initialization"] = "SUCCEEDED"
+            snapshot["reachability"] = "SUCCEEDED"
+        else:
+            payload = envelope.get("result")
+            tools = payload.get("tools") if isinstance(payload, dict) else None
+            if not isinstance(tools, list) or any(not isinstance(item, dict) or not isinstance(item.get("name"), str)
+                                                  for item in tools):
+                errors.append("mcp_tools_list_response_malformed")
+            else:
+                snapshot["tools"] = [item["name"] for item in tools]
     for capability in _read(ROOT / "config/source-capabilities/fin-data.json")["capabilities"]:
         cid = capability["capability_id"]
         result = snapshot.get("representative_results", {}).get(cid)
