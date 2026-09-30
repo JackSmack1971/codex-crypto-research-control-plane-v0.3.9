@@ -1,0 +1,48 @@
+{
+  "arguments_digest": "sha256:e4a9df95a0fec30438c08b2e0d1cde369060cd11d3297ede8516327473b8568f",
+  "capability_id": "fin.crypto.ticker",
+  "content_type": "text/event-stream",
+  "deployment_id": "dep-datvbjflk1mc73d3pitg",
+  "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+  "http_status": 200,
+  "isError": false,
+  "pagination_complete": true,
+  "permit_id": "fdp-f87074a013ce4abeb6037e79a5274f3a",
+  "raw_response_digest": "sha256:40ce2e71229a5cf64342f7309133a2b4047ea7d46dae88abad80feffc0f4de19",
+  "received_at": "2026-09-30T02:43:17.080Z",
+  "request_id": "fin-63e129ec16bd403d987a3eaa16391b6a",
+  "requested_at": "2026-09-30T02:43:13.498Z",
+  "result": {
+    "content": [
+      {
+        "text": "[\n  {\n    \"instType\": \"SWAP\",\n    \"instId\": \"BTC-USDT-SWAP\",\n    \"last\": \"83296\",\n    \"lastSz\": \"0.18\",\n    \"askPx\": \"83296.1\",\n    \"askSz\": \"2032.3\",\n    \"bidPx\": \"83296\",\n    \"bidSz\": \"529.82\",\n    \"open24h\": \"82968.6\",\n    \"high24h\": \"84544.9\",\n    \"low24h\": \"82830\",\n    \"volCcy24h\": \"65165.2739\",\n    \"vol24h\": \"6516527.39\",\n    \"ts\": \"1790736195081\",\n    \"sodUtc0\": \"83627.1\",\n    \"sodUtc8\": \"83049.8\"\n  }\n]",
+        "type": "text"
+      }
+    ],
+    "structuredContent": {
+      "data": [
+        {
+          "askPx": "83296.1",
+          "askSz": "2032.3",
+          "bidPx": "83296",
+          "bidSz": "529.82",
+          "high24h": "84544.9",
+          "instId": "BTC-USDT-SWAP",
+          "instType": "SWAP",
+          "last": "83296",
+          "lastSz": "0.18",
+          "low24h": "82830",
+          "open24h": "82968.6",
+          "sodUtc0": "83627.1",
+          "sodUtc8": "83049.8",
+          "ts": "1790736195081",
+          "vol24h": "6516527.39",
+          "volCcy24h": "65165.2739"
+        }
+      ]
+    }
+  },
+  "schema_version": "1.0",
+  "source_id": "fin_data_mcp_render_prod",
+  "tool_name": "crypto_ticker"
+}

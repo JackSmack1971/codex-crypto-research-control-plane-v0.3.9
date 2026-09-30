@@ -1,0 +1,121 @@
+{
+  "arguments_digest": "sha256:681fb6d5f9d4d0a4317ceb85d28e972a135e276bffcb44752dba8513574af595",
+  "capability_id": "fin.crypto.recent_trades",
+  "content_type": "text/event-stream",
+  "deployment_id": "dep-datvbjflk1mc73d3pitg",
+  "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+  "http_status": 200,
+  "isError": false,
+  "pagination_complete": true,
+  "permit_id": "fdp-c4118e376d6e41a8ba69c61d1bf0ecbb",
+  "protocol_method": "tools/call",
+  "raw_response_digest": "sha256:184d019c2c62a2479a62ebd402c54097bf6a6048c0fc32f2d5c4d3c2fd361d70",
+  "received_at": "2026-09-30T03:15:25.422Z",
+  "request_id": "fin-2a7ac9e223a6447b937e9c4a5a595334",
+  "requested_at": "2026-09-30T03:15:22.212Z",
+  "result": {
+    "content": [
+      {
+        "text": "[\n  {\n    \"instId\": \"BTC-USDT-SWAP\",\n    \"tradeId\": \"2961646837\",\n    \"px\": \"83296.1\",\n    \"sz\": \"4.27\",\n    \"side\": \"buy\",\n    \"ts\": \"1790738122361\",\n    \"source\": \"0\"\n  },\n  {\n    \"instId\": \"BTC-USDT-SWAP\",\n    \"tradeId\": \"2961646836\",\n    \"px\": \"83296\",\n    \"sz\": \"0.5\",\n    \"side\": \"sell\",\n    \"ts\": \"1790738121228\",\n    \"source\": \"0\"\n  },\n  {\n    \"instId\": \"BTC-USDT-SWAP\",\n    \"tradeId\": \"2961646835\",\n    \"px\": \"83296\",\n    \"sz\": \"0.06\",\n    \"side\": \"sell\",\n    \"ts\": \"1790738121203\",\n    \"source\": \"0\"\n  },\n  {\n    \"instId\": \"BTC-USDT-SWAP\",\n    \"tradeId\": \"2961646834\",\n    \"px\": \"83296.1\",\n    \"sz\": \"0.01\",\n    \"side\": \"buy\",\n    \"ts\": \"1790738120780\",\n    \"source\": \"0\"\n  },\n  {\n    \"instId\": \"BTC-USDT-SWAP\",\n    \"tradeId\": \"2961646833\",\n    \"px\": \"83296\",\n    \"sz\": \"18.67\",\n    \"side\": \"sell\",\n    \"ts\": \"1790738120694\",\n    \"source\": \"0\"\n  },\n  {\n    \"instId\": \"BTC-USDT-SWAP\",\n    \"tradeId\": \"2961646832\",\n    \"px\": \"83296.1\",\n    \"sz\": \"4.81\",\n    \"side\": \"buy\",\n    \"ts\": \"1790738120481\",\n    \"source\": \"0\"\n  },\n  {\n    \"instId\": \"BTC-USDT-SWAP\",\n    \"tradeId\": \"2961646831\",\n    \"px\": \"83296\",\n    \"sz\": \"4.81\",\n    \"side\": \"sell\",\n    \"ts\": \"1790738119777\",\n    \"source\": \"0\"\n  },\n  {\n    \"instId\": \"BTC-USDT-SWAP\",\n    \"tradeId\": \"2961646830\",\n    \"px\": \"83296\",\n    \"sz\": \"0.01\",\n    \"side\": \"sell\",\n    \"ts\": \"1790738119755\",\n    \"source\": \"0\"\n  },\n  {\n    \"instId\": \"BTC-USDT-SWAP\",\n    \"tradeId\": \"2961646829\",\n    \"px\": \"83296\",\n    \"sz\": \"0.06\",\n    \"side\": \"sell\",\n    \"ts\": \"1790738118946\",\n    \"source\": \"0\"\n  },\n  {\n    \"instId\": \"BTC-USDT-SWAP\",\n    \"tradeId\": \"2961646828\",\n    \"px\": \"83296\",\n    \"sz\": \"0.3\",\n    \"side\": \"sell\",\n    \"ts\": \"1790738116757\",\n    \"source\": \"0\"\n  }\n]",
+        "type": "text"
+      }
+    ],
+    "structuredContent": {
+      "data": [
+        {
+          "instId": "BTC-USDT-SWAP",
+          "px": "83296.1",
+          "side": "buy",
+          "source": "0",
+          "sz": "4.27",
+          "tradeId": "2961646837",
+          "ts": "1790738122361"
+        },
+        {
+          "instId": "BTC-USDT-SWAP",
+          "px": "83296",
+          "side": "sell",
+          "source": "0",
+          "sz": "0.5",
+          "tradeId": "2961646836",
+          "ts": "1790738121228"
+        },
+        {
+          "instId": "BTC-USDT-SWAP",
+          "px": "83296",
+          "side": "sell",
+          "source": "0",
+          "sz": "0.06",
+          "tradeId": "2961646835",
+          "ts": "1790738121203"
+        },
+        {
+          "instId": "BTC-USDT-SWAP",
+          "px": "83296.1",
+          "side": "buy",
+          "source": "0",
+          "sz": "0.01",
+          "tradeId": "2961646834",
+          "ts": "1790738120780"
+        },
+        {
+          "instId": "BTC-USDT-SWAP",
+          "px": "83296",
+          "side": "sell",
+          "source": "0",
+          "sz": "18.67",
+          "tradeId": "2961646833",
+          "ts": "1790738120694"
+        },
+        {
+          "instId": "BTC-USDT-SWAP",
+          "px": "83296.1",
+          "side": "buy",
+          "source": "0",
+          "sz": "4.81",
+          "tradeId": "2961646832",
+          "ts": "1790738120481"
+        },
+        {
+          "instId": "BTC-USDT-SWAP",
+          "px": "83296",
+          "side": "sell",
+          "source": "0",
+          "sz": "4.81",
+          "tradeId": "2961646831",
+          "ts": "1790738119777"
+        },
+        {
+          "instId": "BTC-USDT-SWAP",
+          "px": "83296",
+          "side": "sell",
+          "source": "0",
+          "sz": "0.01",
+          "tradeId": "2961646830",
+          "ts": "1790738119755"
+        },
+        {
+          "instId": "BTC-USDT-SWAP",
+          "px": "83296",
+          "side": "sell",
+          "source": "0",
+          "sz": "0.06",
+          "tradeId": "2961646829",
+          "ts": "1790738118946"
+        },
+        {
+          "instId": "BTC-USDT-SWAP",
+          "px": "83296",
+          "side": "sell",
+          "source": "0",
+          "sz": "0.3",
+          "tradeId": "2961646828",
+          "ts": "1790738116757"
+        }
+      ]
+    }
+  },
+  "schema_version": "1.0",
+  "source_id": "fin_data_mcp_render_prod",
+  "tool_name": "crypto_recent_trades"
+}

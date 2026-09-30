@@ -1,0 +1,49 @@
+{
+  "arguments_digest": "sha256:8db0af46f77f5896f3ceba52e79ba56b0ba93fb9715392fecd826907076fb6f3",
+  "capability_id": "fin.crypto.funding",
+  "content_type": "text/event-stream",
+  "deployment_id": "dep-datvbjflk1mc73d3pitg",
+  "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+  "http_status": 200,
+  "isError": false,
+  "pagination_complete": true,
+  "permit_id": "fdp-7dc8af25a1304c57a39cf5c2f19adf8c",
+  "raw_response_digest": "sha256:ae0d84033aeb6f32ddeff2c268fc97b9c12fc1c642865826d7ce6aa1ab2abb94",
+  "received_at": "2026-09-30T02:41:42.876Z",
+  "request_id": "fin-fa7fd75420c14b7aa5a7caa20951473f",
+  "requested_at": "2026-09-30T02:41:39.264Z",
+  "result": {
+    "content": [
+      {
+        "text": "[\n  {\n    \"formulaType\": \"withRate\",\n    \"fundingRate\": \"0.0000448433341473\",\n    \"fundingTime\": \"1790755200000\",\n    \"impactValue\": \"20000.0000000000000000\",\n    \"instId\": \"BTC-USDT-SWAP\",\n    \"instType\": \"SWAP\",\n    \"interestRate\": \"0.0001000000000000\",\n    \"maxFundingRate\": \"0.00375\",\n    \"method\": \"current_period\",\n    \"minFundingRate\": \"-0.00375\",\n    \"nextFundingRate\": \"\",\n    \"nextFundingTime\": \"1790784000000\",\n    \"premium\": \"-0.0005069304462666\",\n    \"prevFundingTime\": \"1790726400000\",\n    \"settFundingRate\": \"0.0001000000000000\",\n    \"settState\": \"settled\",\n    \"ts\": \"1790736062974\"\n  }\n]",
+        "type": "text"
+      }
+    ],
+    "structuredContent": {
+      "data": [
+        {
+          "formulaType": "withRate",
+          "fundingRate": "0.0000448433341473",
+          "fundingTime": "1790755200000",
+          "impactValue": "20000.0000000000000000",
+          "instId": "BTC-USDT-SWAP",
+          "instType": "SWAP",
+          "interestRate": "0.0001000000000000",
+          "maxFundingRate": "0.00375",
+          "method": "current_period",
+          "minFundingRate": "-0.00375",
+          "nextFundingRate": "",
+          "nextFundingTime": "1790784000000",
+          "premium": "-0.0005069304462666",
+          "prevFundingTime": "1790726400000",
+          "settFundingRate": "0.0001000000000000",
+          "settState": "settled",
+          "ts": "1790736062974"
+        }
+      ]
+    }
+  },
+  "schema_version": "1.0",
+  "source_id": "fin_data_mcp_render_prod",
+  "tool_name": "crypto_funding_rate"
+}

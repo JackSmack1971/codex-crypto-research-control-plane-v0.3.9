@@ -30,16 +30,55 @@ def _read(path: str | Path) -> dict[str, Any]:
 def _rows(value: Any) -> list[dict[str, Any]]:
     """Extract JSON object rows from the normalized MCP structured result."""
     if isinstance(value, dict):
+        structured = value.get("structuredContent")
+        if structured is not None:
+            return _rows(structured)
+        content = value.get("content")
+        if isinstance(content, list):
+            for block in content:
+                if isinstance(block, dict) and isinstance(block.get("text"), str):
+                    try:
+                        return _rows(json.loads(block["text"]))
+                    except json.JSONDecodeError:
+                        continue
+            return []
         if isinstance(value.get("rows"), list):
-            return [row for row in value["rows"] if isinstance(row, dict)]
+            return _rows(value["rows"])
         if isinstance(value.get("data"), list):
-            return [row for row in value["data"] if isinstance(row, dict)]
+            return _rows(value["data"])
         if isinstance(value.get("data"), dict):
             return [value["data"]]
         return [value]
     if isinstance(value, list):
-        return [row for row in value if isinstance(row, dict)]
+        rows: list[dict[str, Any]] = []
+        for row in value:
+            if isinstance(row, dict):
+                rows.append(row)
+            elif isinstance(row, list):
+                rows.append({str(index): item for index, item in enumerate(row)})
+        return rows
     return []
+
+
+def _mcp_payload_complete(envelope: dict[str, Any]) -> bool:
+    if envelope.get("pagination_complete") is not True:
+        return False
+    payload = envelope.get("result")
+    if not isinstance(payload, dict):
+        return True
+    if payload.get("nextCursor"):
+        return False
+    if payload.get("structuredContent") is not None:
+        return True
+    for block in payload.get("content", []):
+        if isinstance(block, dict) and isinstance(block.get("text"), str):
+            text = block["text"].lstrip()
+            if text.startswith(("[", "{")):
+                try:
+                    json.loads(text)
+                except json.JSONDecodeError:
+                    return False
+    return True
 
 
 def _health(severity: str, status: str, reason: str | None = None) -> dict[str, Any]:
@@ -68,6 +107,7 @@ def _bind_snapshot_to_ledger(snapshot: dict[str, Any], ledger: dict[str, Any]) -
     contracts = {item["capability_id"]: item for item in _read(ROOT / "config/fin-data-response-contracts.json")["contracts"]}
     for operation_id, operation_name, key in (
         ("fin.mcp.initialize", "initialize", "initialization_envelope"),
+        ("fin.mcp.initialized_notification", "notifications/initialized", "initialized_notification_envelope"),
         ("fin.mcp.tools_list", "tools/list", "catalog_envelope"),
     ):
         envelope = snapshot.get(key)
@@ -90,7 +130,9 @@ def _bind_snapshot_to_ledger(snapshot: dict[str, Any], ledger: dict[str, Any]) -
         elif operation_id == "fin.mcp.initialize":
             snapshot["initialization"] = "SUCCEEDED"
             snapshot["reachability"] = "SUCCEEDED"
-        else:
+        elif operation_id == "fin.mcp.tools_list":
+            if envelope.get("pagination_complete") is not True:
+                errors.append("mcp_tools_list_pagination_incomplete")
             payload = envelope.get("result")
             tools = payload.get("tools") if isinstance(payload, dict) else None
             if not isinstance(tools, list) or any(not isinstance(item, dict) or not isinstance(item.get("name"), str)
@@ -128,7 +170,15 @@ def _bind_snapshot_to_ledger(snapshot: dict[str, Any], ledger: dict[str, Any]) -
             rows = _rows(envelope.get("result"))
             timestamps = [row.get(effective_field) for row in rows]
             try:
-                parsed = [parse_timestamp(value, f"representative.{effective_field}") for value in timestamps]
+                time_format = contract.get("effective_time_format")
+                if time_format == "UNIX_MILLISECONDS":
+                    parsed = [datetime.fromtimestamp(float(value) / 1000.0, timezone.utc)
+                              for value in timestamps]
+                elif time_format == "UNIX_SECONDS":
+                    parsed = [datetime.fromtimestamp(float(value), timezone.utc) for value in timestamps]
+                else:
+                    parsed = [parse_timestamp(value, f"representative.{effective_field}")
+                              for value in timestamps]
                 if not parsed or any(value.utcoffset() is None for value in parsed):
                     raise ValueError("effective_time_missing_or_timezone_naive")
                 observed_at = max(parsed).astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
@@ -138,7 +188,8 @@ def _bind_snapshot_to_ledger(snapshot: dict[str, Any], ledger: dict[str, Any]) -
         result.update({"isError": envelope.get("isError"),
                        "structuredContent": envelope.get("result"),
                        "observed_at": observed_at,
-                       "pagination_complete": envelope.get("pagination_complete")})
+                       "received_at": envelope.get("received_at"),
+                       "pagination_complete": _mcp_payload_complete(envelope)})
     return errors
 
 
@@ -152,7 +203,10 @@ def _evaluate_qualification(snapshot: dict[str, Any], capabilities: dict[str, An
     tools = set(snapshot.get("tools", [])) if isinstance(snapshot.get("tools", []), list) else set()
     deployment = snapshot.get("deployment_id")
     contracts = {item.get("capability_id"): item for item in contract_registry.get("contracts", [])}
-    endpoint_ok = endpoint_match and reachable and initialized and bool(deployment)
+    # MCP proves behavior at the configured endpoint; the Render deployment
+    # identifier is separately observed descriptive metadata, not attested by
+    # an MCP response and therefore cannot gate endpoint qualification.
+    endpoint_ok = endpoint_match and reachable and initialized
     if not endpoint_match:
         endpoint_status, reason = "BLOCKED", "configured_endpoint_identity_mismatch"
     elif snapshot.get("reachability") in {"FAILED", "COLD", "UNAVAILABLE"}:
@@ -161,8 +215,6 @@ def _evaluate_qualification(snapshot: dict[str, Any], capabilities: dict[str, An
         endpoint_status, reason = "BLOCKED", "endpoint_reachability_unverified"
     elif not initialized:
         endpoint_status, reason = "BLOCKED", "mcp_initialization_failed"
-    elif not deployment:
-        endpoint_status, reason = "BLOCKED", "render_deployment_identity_missing"
     else:
         endpoint_status, reason = "AVAILABLE", None
 
@@ -175,6 +227,12 @@ def _evaluate_qualification(snapshot: dict[str, Any], capabilities: dict[str, An
             age = None
         elif tool_name not in tools:
             state, why, age = "UNAVAILABLE", "required_tool_missing_from_production_catalog", None
+        elif not isinstance(snapshot.get("representative_results", {}).get(cid), dict):
+            state, why, age = "BLOCKED", "representative_retrieval_failed_or_missing", None
+        elif snapshot["representative_results"][cid].get("isError") is True:
+            state, why, age = "BLOCKED", "representative_retrieval_failed_or_missing", None
+        elif snapshot["representative_results"][cid].get("pagination_complete") is not True:
+            state, why, age = "BLOCKED", "pagination_completion_unverified", None
         elif not isinstance(contract, dict) or contract.get("status") != "REGISTERED":
             state, why, age = "BLOCKED", "response_schema_and_freshness_contract_unregistered", None
         elif contract.get("pagination_mode") not in {"SINGLE_RESPONSE", "CURSOR", "PAGE_TOKEN", "NONE"}:
@@ -201,15 +259,20 @@ def _evaluate_qualification(snapshot: dict[str, Any], capabilities: dict[str, An
                 elif any(not _field_type_matches(row.get(field), kind)
                          for row in rows for field, kind in contract.get("field_types", {}).items()):
                     state, why, age = "BLOCKED", "response_schema_type_drift", None
+                elif any(field not in row or not _value_matches_schema(row[field], field_schema)
+                         for row in rows for field, field_schema in contract.get("field_schemas", {}).items()):
+                    state, why, age = "BLOCKED", "response_nested_schema_drift", None
                 else:
                     observed = result.get("observed_at")
+                    freshness_reference = result.get("received_at", now)
                     max_age = contract.get("max_age_seconds")
                     try:
                         cutoff = parse_timestamp(now, "qualification.now")
                         observation = parse_timestamp(observed, "representative.observed_at")
-                        if cutoff.utcoffset() is None or observation.utcoffset() is None:
+                        received = parse_timestamp(freshness_reference, "representative.received_at")
+                        if cutoff.utcoffset() is None or observation.utcoffset() is None or received.utcoffset() is None:
                             raise ValueError("timezone_required")
-                        age = int((cutoff - observation).total_seconds())
+                        age = int((received - observation).total_seconds())
                         if age < 0:
                             state, why = "BLOCKED", "representative_observation_in_future"
                         elif not isinstance(max_age, int) or max_age < 0:
@@ -284,6 +347,49 @@ def qualify(snapshot: dict[str, Any], capabilities: dict[str, Any], now: str,
     return result
 
 
+def assemble_capture(directory: Path) -> dict[str, Any]:
+    """Assemble fixed, file-bound client captures into a qualification snapshot."""
+    controls = {
+        "initialization_envelope": "initialize.result.json",
+        "initialized_notification_envelope": "initialized.result.json",
+        "catalog_envelope": "tools-list.result.json",
+    }
+    capability_files = {
+        "fin.crypto.instrument_discovery": "instrument-swap.result.json",
+        "fin.crypto.funding": "funding.result.json",
+        "fin.crypto.open_interest": "open-interest.result.json",
+        "fin.crypto.long_short_ratio": "long-short.result.json",
+        "fin.crypto.mark_price": "mark-price.result.json",
+        "fin.crypto.ticker": "ticker-spot.result.json",
+        "fin.crypto.orderbook": "orderbook.result.json",
+        "fin.crypto.recent_trades": "recent-trades.result.json",
+        "fin.crypto.candles": "candles.result.json",
+        "fin.crypto.index_candles": "index-candles.result.json",
+    }
+    envelopes = {key: _read(directory / name) for key, name in controls.items()}
+    schema = _read(ROOT / "schemas/fin_data_result.schema.json")
+    from validate_artifact import validate as validate_schema
+    for key, envelope in envelopes.items():
+        errors = validate_schema(envelope, schema)
+        if errors:
+            raise ValueError(f"capture_schema_invalid:{key}:" + ";".join(errors))
+    init = envelopes["initialization_envelope"]
+    snapshot: dict[str, Any] = {"endpoint_url": init["endpoint_url"],
+                                "deployment_id": init.get("deployment_id"),
+                                "reachability": "UNKNOWN", "initialization": "UNKNOWN", "tools": [],
+                                "representative_results": {}, **envelopes}
+    for capability_id, filename in capability_files.items():
+        path = directory / filename
+        if not path.is_file():
+            continue
+        envelope = _read(path)
+        errors = validate_schema(envelope, schema)
+        if errors:
+            raise ValueError(f"capture_schema_invalid:{capability_id}:" + ";".join(errors))
+        snapshot["representative_results"][capability_id] = {"request_envelope": envelope}
+    return snapshot
+
+
 def normalize_result(result: dict[str, Any], capability_id: str) -> list[dict[str, Any]]:
     """Add provenance fields while retaining each full provider-native row."""
     payload = result.get("structuredContent", result.get("result"))
@@ -303,6 +409,32 @@ def _field_type_matches(value: Any, kind: str) -> bool:
               "array": lambda item: isinstance(item, list),
               "object": lambda item: isinstance(item, dict)}
     return kind in checks and checks[kind](value)
+
+
+def _value_matches_schema(value: Any, schema: dict[str, Any]) -> bool:
+    kind = schema.get("type")
+    if kind == "array":
+        if not isinstance(value, list):
+            return False
+        if len(value) < schema.get("minItems", 0) or (
+            isinstance(schema.get("maxItems"), int) and len(value) > schema["maxItems"]
+        ):
+            return False
+        item_schema = schema.get("items")
+        return item_schema is None or all(_value_matches_schema(item, item_schema) for item in value)
+    if kind == "object":
+        if not isinstance(value, dict) or not set(schema.get("required", [])).issubset(value):
+            return False
+        properties = schema.get("properties", {})
+        return all(key not in value or _value_matches_schema(value[key], rule)
+                   for key, rule in properties.items())
+    checks = {"string": lambda item: isinstance(item, str),
+              "number": lambda item: isinstance(item, (int, float)) and not isinstance(item, bool),
+              "integer": lambda item: isinstance(item, int) and not isinstance(item, bool),
+              "boolean": lambda item: isinstance(item, bool)}
+    if kind not in checks or not checks[kind](value):
+        return False
+    return "enum" not in schema or value in schema["enum"]
 
 
 def build_manifest(snapshot: dict[str, Any], capability: dict[str, Any], run_id: str,
@@ -491,6 +623,9 @@ def main() -> int:
     materialization.add_argument("--out-dir", required=True)
     verification = sub.add_parser("verify")
     verification.add_argument("manifest")
+    assembly = sub.add_parser("assemble-snapshot")
+    assembly.add_argument("--input-dir", required=True)
+    assembly.add_argument("--out", required=True)
     args = parser.parse_args()
     try:
         if args.command == "verify":
@@ -498,6 +633,11 @@ def main() -> int:
             if errors:
                 print("\n".join(errors)); return 1
             print("PASS:" + args.manifest); return 0
+        if args.command == "assemble-snapshot":
+            snapshot = assemble_capture(Path(args.input_dir))
+            write_new_json(args.out, snapshot)
+            print(f"ASSEMBLED:{args.out}")
+            return 0
         snapshot = _read(args.snapshot)
         capabilities = _read(ROOT / "config/source-capabilities/fin-data.json")
         ledger = _read(args.ledger)

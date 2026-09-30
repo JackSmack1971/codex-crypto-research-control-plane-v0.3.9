@@ -1,0 +1,65 @@
+{
+  "adapter_payload": {
+    "deployment_id": "dep-datvbjflk1mc73d3pitg",
+    "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+    "normalization_version": "fin-data-native-envelope-v1",
+    "normalized_file_digest": "sha256:77caf1183be5d22087f810c4ff86e72f81faa1aac6abd149d3613e93801102fc",
+    "normalized_path": "fin_crypto_mark_price.normalized.jsonl",
+    "normalized_rows_digest": "sha256:ee3e413e49c60677d7a79ff0ef94279ffb16b07ce83f803000a876ea734c5055",
+    "raw_file_digest": "sha256:08542ca6a48d620727117f52f3006e17ce088dfdf0650faef232d962a6aeeeba",
+    "raw_path": "fin_crypto_mark_price.raw.json",
+    "raw_response_digest": "sha256:08542ca6a48d620727117f52f3006e17ce088dfdf0650faef232d962a6aeeeba"
+  },
+  "admissibility": "NOT_ADMITTED",
+  "attempt_id": "fin-data-prod-probe-2026-09-30",
+  "availability_status": "AVAILABLE",
+  "capability_id": "fin.crypto.mark_price",
+  "content_digest": "sha256:bda76a4b3961e61852b202903a0e397be22fab05ad67e1f7b81ce34788934cf7",
+  "created_at": "2026-09-30T02:56:39Z",
+  "datasets": [
+    {
+      "admissibility": "NOT_ADMITTED",
+      "available_at": "2026-09-30T02:56:39Z",
+      "data_digest": "sha256:ee3e413e49c60677d7a79ff0ef94279ffb16b07ce83f803000a876ea734c5055",
+      "dataset_id": "fin.crypto.mark_price:fin-data-prod-probe-2026-09-30",
+      "evidence_role": "DIAGNOSTIC",
+      "freshness_seconds": 76625,
+      "max_age_seconds": 600,
+      "observed_at": "2026-09-30T02:42:54.135000Z",
+      "pagination_complete": true,
+      "published_at": null,
+      "qualification": "UNQUALIFIED",
+      "row_count": 1,
+      "status": "DEGRADED"
+    }
+  ],
+  "degradation_reason": "fin_data_capability_not_qualified",
+  "discovery_status": "DISCOVERED",
+  "manifest_id": "sm-28bb0e57dc631be865566e09",
+  "qualification": "UNQUALIFIED",
+  "research_cutoff": "2026-10-01T00:00:00Z",
+  "run_id": "2026-09-30-eod",
+  "schema_version": "1.0",
+  "source": {
+    "adapter_id": "fin_data_mcp",
+    "adapter_version": "0.1.0",
+    "capability_ids": [
+      "fin.crypto.instrument_discovery",
+      "fin.crypto.funding",
+      "fin.crypto.open_interest",
+      "fin.crypto.long_short_ratio",
+      "fin.crypto.mark_price",
+      "fin.crypto.ticker",
+      "fin.crypto.orderbook",
+      "fin.crypto.recent_trades",
+      "fin.crypto.candles",
+      "fin.crypto.index_candles"
+    ],
+    "identity_digest": "sha256:8aa8fd9ae616769286e1646944fbd519c6d2aeeeb392707723e85e20c3aec379",
+    "provider": "CohenD/fin-data-mcp",
+    "runtime": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+    "source_id": "fin_data_mcp_render_prod",
+    "transport": "streamable_http"
+  },
+  "status": "DEGRADED"
+}

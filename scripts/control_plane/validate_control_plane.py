@@ -157,11 +157,22 @@ def check_python_network_bypass(errors: list[str]) -> None:
         "POLYGON_API_KEY": "POLYGON_API_KEY",
     }
     validator_path = Path(__file__).resolve()
+    governed_mcp_path = ROOT / "scripts" / "control_plane" / "fin_data_mcp_client.py"
+    governed_mcp_text = governed_mcp_path.read_text(encoding="utf-8") if governed_mcp_path.is_file() else ""
+    governed_mcp_transport = all(marker in governed_mcp_text for marker in (
+        "configured_endpoint_identity_mismatch", "fin_data_request_gate.py",
+        "MCP-Protocol-Version", "Streamable HTTP MCP client"))
     for path in ROOT.rglob("*.py"):
         if path.resolve() == validator_path or not is_project_source(path, ROOT):
             continue
         text = path.read_text(encoding="utf-8")
         for needle, label in forbidden.items():
+            # urllib is allowed only inside the source-specific Streamable HTTP
+            # MCP client after its endpoint, permit/record, and protocol guards
+            # remain present. This is MCP transport, not provider REST access.
+            if (label == "urllib.request" and path.resolve() == governed_mcp_path.resolve()
+                    and governed_mcp_transport):
+                continue
             if needle in text:
                 errors.append(f"direct-network-bypass:{path.relative_to(ROOT).as_posix()}:{label}")
 
@@ -306,6 +317,7 @@ def main() -> int:
         "scripts/control_plane/evaluate_capabilities.py", "scripts/control_plane/materialize_mcp_dataset.py", "scripts/control_plane/materialize_mcp_dataset.cmd", "scripts/control_plane/reconcile_materializations.py", "scripts/control_plane/path_policy.py",
         "scripts/control_plane/massive_request_gate.py",
         "scripts/control_plane/fin_data_source.py", "scripts/control_plane/fin_data_request_gate.py",
+        "scripts/control_plane/fin_data_mcp_client.py",
         "scripts/control_plane/source_evidence.py", "scripts/control_plane/validate_sources.py",
         "scripts/control_plane/seal_source_acquisition.py", "scripts/control_plane/build_evidence_bundle.py", "scripts/control_plane/verify_evidence_bundle.py",
         "scripts/control_plane/bootstrap.cmd", "scripts/control_plane/bootstrap.ps1",

@@ -14,7 +14,7 @@ Resolve the active project root by checking `AGENTS.md` and `.codex/config.toml`
 ## Governed use
 
 1. Read `config/source-capabilities/fin-data.json` and its per-attempt request policy. Initialize the Fin Data request ledger before any provider call; obtain a permit for each MCP operation and record the result immediately.
-2. Use only the configured production Streamable HTTP MCP endpoint. MCP initialize and `tools/list` are required. Render deployment status or a similarly named MCP server does not prove endpoint availability.
+2. Use `scripts/control_plane/fin_data_mcp_client.py` for Streamable HTTP calls. It rejects any endpoint other than the configured production route and records each response in the ledger. MCP initialize, `notifications/initialized`, and `tools/list` are required. Render deployment status or a similarly named MCP server does not prove endpoint availability.
 3. For qualification, require current production tool presence, one bounded representative read per proposed capability, an observed retrieval timestamp, a registered response field/type contract, and a declared freshness bound. Missing any item leaves that capability unqualified.
 4. Preserve the complete raw MCP result and digest. Use `scripts/control_plane/fin_data_source.py` deterministic normalization/materialization and the generalized source acquisition manifest. Keep evidence `DIAGNOSTIC` until qualification and a separate dependency/admission decision pass.
 5. An unavailable, cold, malformed, stale or schema-drifted endpoint produces explicit `UNAVAILABLE`, `BLOCKED` or `DEGRADED` status. Never retry around a rate-limit warning in the same attempt. Never fall back to Massive or blend sources.

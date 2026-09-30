@@ -22,7 +22,8 @@ class FinDataRequestGateTests(unittest.TestCase):
             ledger = Path(td) / "ledger.json"
             arguments = Path(td) / "args.json"
             result_file = Path(td) / "result.json"
-            arguments.write_text('{"instId":"BTC-USDT"}', encoding="utf-8")
+            call_args = {"name": "crypto_ticker", "arguments": {"instId": "BTC-USDT"}}
+            arguments.write_text(json.dumps(call_args), encoding="utf-8")
             self.assertEqual(0, self.run_gate("init", "--attempt-id", "attempt-test", "--ledger", ledger).returncode)
             permit = self.run_gate("permit", "--ledger", ledger, "--capability-id", "fin.crypto.ticker",
                                    "--tool-name", "crypto_ticker", "--request-id", "req-1",
@@ -34,9 +35,11 @@ class FinDataRequestGateTests(unittest.TestCase):
                         "schema_version": "1.0", "requested_at": "2026-09-29T11:59:00Z",
                         "received_at": "2026-09-29T11:59:01Z", "deployment_id": "dep-test",
                         "permit_id": binding["permit_id"], "capability_id": "fin.crypto.ticker",
-                        "tool_name": "crypto_ticker", "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
-                        "arguments_digest": digest({"instId": "BTC-USDT"}), "isError": False,
+                        "tool_name": "crypto_ticker", "protocol_method": "tools/call",
+                        "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+                        "arguments_digest": digest(call_args), "isError": False,
                         "pagination_complete": True,
+                        "http_status": 200, "content_type": "application/json",
                         "raw_response_digest": digest(raw), "result": raw}
             result_file.write_text(json.dumps(envelope), encoding="utf-8")
             recorded = self.run_gate("record", "--ledger", ledger, "--request-id", "req-1", "--result-file", result_file)

@@ -109,6 +109,18 @@ def main() -> int:
         schema_errors = validate_schema(result, result_schema)
         if schema_errors:
             print("RESULT_SCHEMA_INVALID:" + ";".join(schema_errors)); return 4
+        control_methods = {"fin.mcp.initialize": "initialize",
+                           "fin.mcp.tools_list": "tools/list",
+                           "fin.mcp.initialized_notification": "notifications/initialized"}
+        expected_method = control_methods.get(match["capability_id"], "tools/call")
+        if result.get("protocol_method") != expected_method:
+            print("RESULT_PROTOCOL_METHOD_MISMATCH"); return 4
+        if expected_method == "tools/call" and (
+                not isinstance(match.get("arguments"), dict)
+                or match["arguments"].get("name") != match.get("tool_name")
+                or set(match["arguments"]) != {"name", "arguments"}
+                or not isinstance(match["arguments"].get("arguments"), dict)):
+            print("PERMITTED_WIRE_TOOL_IDENTITY_MISMATCH"); return 4
         for key, expected in (("source_id", ledger["source_id"]), ("request_id", match["request_id"]),
                               ("permit_id", match["permit_id"]), ("capability_id", match["capability_id"]),
                               ("tool_name", match["tool_name"]), ("endpoint_url", match["endpoint_url"]),

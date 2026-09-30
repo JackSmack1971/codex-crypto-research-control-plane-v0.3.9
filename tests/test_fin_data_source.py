@@ -10,7 +10,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts" / "control_plane"))
 from fin_data_source import (build_manifest, materialize, qualify, verify_materialization,
-                             _evaluate_qualification, _bind_snapshot_to_ledger)  # noqa: E402
+                             _evaluate_qualification, _bind_snapshot_to_ledger, _rows, assemble_capture,
+                             _value_matches_schema)  # noqa: E402
 from common import digest  # noqa: E402
 from source_evidence import validate_bundle, validate_source_manifest  # noqa: E402
 from build_evidence_bundle import build as build_bundle  # noqa: E402
@@ -86,11 +87,28 @@ class FinDataQualificationTests(unittest.TestCase):
         self.assertEqual("BLOCKED", result["capabilities"][cap["capability_id"]]["status"])
         self.assertEqual("QUALIFIED", result["capabilities"][self.config["capabilities"][0]["capability_id"]]["status"])
 
+    def test_incomplete_provider_page_is_reported_before_unregistered_contract(self):
+        cap = self.config["capabilities"][0]
+        self.snapshot["representative_results"][cap["capability_id"]] = {
+            "isError": False, "pagination_complete": False,
+            "structuredContent": "truncated provider page"}
+        contracts = {"schema_version": "1.0", "source_id": "fin_data_mcp_render_prod",
+                     "contracts": [{"capability_id": cap["capability_id"], "status": "UNREGISTERED"}]}
+        result = _evaluate_qualification(self.snapshot, self.config, self.now, contracts)
+        self.assertEqual("pagination_completion_unverified",
+                         result["capabilities"][cap["capability_id"]]["reason"])
+
     def test_successful_qualification_is_separate_from_evidence_admission(self):
         result = _evaluate_qualification(self.snapshot, self.config, self.now, self.test_contracts)
         self.assertEqual("QUALIFIED", result["status"])
         self.assertTrue(all(item["status"] == "QUALIFIED" for item in result["capabilities"].values()))
         self.assertTrue(all(not item["admitted"] for item in result["capabilities"].values()))
+
+    def test_endpoint_qualification_does_not_require_unattested_render_deployment_id(self):
+        self.snapshot["deployment_id"] = None
+        result = _evaluate_qualification(self.snapshot, self.config, self.now, self.test_contracts)
+        self.assertEqual("AVAILABLE", result["endpoint_status"])
+        self.assertEqual("QUALIFIED", result["status"])
 
     def test_production_policy_keeps_unregistered_contracts_blocked(self):
         result = qualify(self.snapshot, self.config, self.now)
@@ -130,10 +148,20 @@ class FinDataQualificationTests(unittest.TestCase):
                         "observed_at": "2026-09-29T11:59:59Z", "request_envelope": envelope}}}
         errors = _bind_snapshot_to_ledger(snapshot, ledger)
         self.assertEqual({"mcp_control_operation_missing:fin.mcp.initialize",
+                          "mcp_control_operation_missing:fin.mcp.initialized_notification",
                           "mcp_control_operation_missing:fin.mcp.tools_list"}, set(errors))
         bound = snapshot["representative_results"][cap["capability_id"]]
         self.assertEqual(envelope["received_at"], bound["observed_at"])
         self.assertTrue(bound["pagination_complete"])
+
+    def test_positional_provider_rows_and_nested_orderbook_schema_are_deterministic(self):
+        rows = _rows({"structuredContent": {"data": [["1790736000000", "1.4"]]}})
+        self.assertEqual([{"0": "1790736000000", "1": "1.4"}], rows)
+        schema = {"type": "array", "minItems": 1, "maxItems": 2,
+                  "items": {"type": "array", "minItems": 4, "maxItems": 4,
+                            "items": {"type": "string"}}}
+        self.assertTrue(_value_matches_schema([["1", "2", "0", "4"]], schema))
+        self.assertFalse(_value_matches_schema([["1", "2", "0"]], schema))
 
     def test_qualification_cli_uses_repository_policy_and_validates_its_report(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -185,6 +213,40 @@ class FinDataQualificationTests(unittest.TestCase):
             raw = manifest.parent / manifest_obj["adapter_payload"]["raw_path"]
             raw.write_text("{}\n", encoding="utf-8")
             self.assertIn("raw_response_digest_mismatch", verify_materialization(manifest))
+
+    def test_captured_production_qualification_and_materializations_bind_to_evidence_bundle(self):
+        capture = ROOT / "research/sources/fin-data-prod-probe-2026-09-30-v2"
+        report = json.loads((capture / "qualification-report.json").read_text(encoding="utf-8"))
+        ledger = json.loads((capture / "request-ledger.json").read_text(encoding="utf-8"))
+        snapshot = assemble_capture(capture)
+        self.assertEqual("AVAILABLE", report["endpoint_status"])
+        self.assertEqual("DEGRADED", report["status"])
+        self.assertEqual(9, sum(item["status"] == "QUALIFIED" for item in report["capabilities"].values()))
+        self.assertEqual("pagination_completion_unverified",
+                         report["capabilities"]["fin.crypto.instrument_discovery"]["reason"])
+        self.assertTrue(all(not item["admitted"] for item in report["capabilities"].values()))
+        self.assertEqual("SEALED", ledger["status"])
+        self.assertEqual(report["ledger_digest"], ledger["content_digest"])
+        snapshot["verified_request_ledger"] = ledger
+        replayed = qualify(snapshot, self.config, report["observed_at"], ledger)
+        self.assertEqual(report["snapshot_digest"], replayed["snapshot_digest"])
+        self.assertTrue(all(call["result_digest"] for call in ledger["calls"]))
+        self.assertTrue(all(json.loads(path.read_text(encoding="utf-8")).get("protocol_method")
+                            for path in capture.glob("*.result.json")))
+
+        materialized = capture / "materialized"
+        manifests = sorted(materialized.glob("*.manifest.json"))
+        self.assertEqual(10, len(manifests))
+        for manifest_path in manifests:
+            self.assertEqual([], verify_materialization(manifest_path))
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            for dataset in manifest["datasets"]:
+                self.assertEqual("DIAGNOSTIC", dataset["evidence_role"])
+                self.assertEqual("NOT_ADMITTED", dataset["admissibility"])
+        selected = next(path for path in manifests if "fin_crypto_open_interest" in path.name)
+        bundle = build_bundle([selected], "2026-09-30-eod", "fin-data-prod-probe-2026-09-30-v2",
+                              "2026-10-01T00:00:00Z", materialized)
+        self.assertEqual([], validate_bundle(bundle, materialized))
 
     def test_unprobed_source_seals_explicit_blocked_manifest_without_fabricated_rows(self):
         cap = self.config["capabilities"][0]

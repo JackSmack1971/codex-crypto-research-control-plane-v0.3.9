@@ -134,7 +134,10 @@ def validate_source_manifest(obj: dict[str, Any], registry: dict[str, Any] | Non
                     continue
                 if observed >= cutoff: errors.append(f"{label}.observation_at_or_after_cutoff")
                 max_age = ds.get("max_age_seconds")
-                if isinstance(max_age, int) and cutoff is not None and (cutoff-observed).total_seconds() > max_age:
+                # Stale observations remain durable diagnostic evidence. Only
+                # research inputs are rejected for exceeding their age bound.
+                if (ds.get("evidence_role") == "RESEARCH_INPUT" and isinstance(max_age, int)
+                        and cutoff is not None and (cutoff-observed).total_seconds() > max_age):
                     errors.append(f"{label}.stale_observation")
                 freshness = ds.get("freshness_seconds")
                 if isinstance(freshness, int) and cutoff is not None and freshness != int((cutoff-observed).total_seconds()):

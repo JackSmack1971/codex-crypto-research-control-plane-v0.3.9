@@ -1,0 +1,6 @@
+{
+  "name": "crypto_list_instruments",
+  "arguments": {
+    "instType": "SPOT"
+  }
+}
