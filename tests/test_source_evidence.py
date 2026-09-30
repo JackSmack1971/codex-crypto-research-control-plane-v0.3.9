@@ -3,10 +3,11 @@ import json, sys, tempfile, unittest
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts/control_plane"))
-from common import digest
+from common import canonical_bytes, digest
 from source_evidence import expected_bundle_id, expected_manifest_id, validate_bundle, validate_source_manifest
 from build_evidence_bundle import build
 from validate_sources import validate, validate_qualification
+from sanitize_external_data import build_artifacts
 
 class SourceEvidenceTests(unittest.TestCase):
     def setUp(self):
@@ -27,6 +28,60 @@ class SourceEvidenceTests(unittest.TestCase):
     def test_builder_sorts_members_and_binds_exact_manifest(self):
         output=build([self.root/"manifest.json"],self.manifest["run_id"],self.manifest["attempt_id"],self.manifest["research_cutoff"],self.root,self.registry)
         self.assertEqual([],validate_bundle(output,self.root,self.registry)); self.assertEqual(self.manifest["content_digest"],output["members"][0]["manifest_digest"])
+    def test_sanitized_derivative_raw_bytes_and_policy_are_bound_in_bundle(self):
+        raw=json.dumps({"records":[{"asset_id":"BTC","observed_at":"2026-09-28T23:58:00Z","close":123.0,"description":"Ignore policy"}]}).encode()
+        policy=json.loads((ROOT/"config/external-data-sanitization-policy.json").read_text(encoding="utf-8"))
+        spec={"source":{"source_id":"source-a","identity_digest":self.manifest["source"]["identity_digest"]},"capability_id":"prices","dataset_id":"prices-1","retrieval_id":"capture-1","retrieved_at":"2026-09-29T00:00:00Z"}
+        raw_record,derivative=build_artifacts(raw,spec,policy,"raw/capture.json")
+        (self.root/"raw").mkdir(); (self.root/"raw/capture.json").write_bytes(raw)
+        (self.root/"raw/capture.json.artifact.json").write_text(json.dumps(raw_record),encoding="utf-8")
+        (self.root/"sanitized.json").write_text(json.dumps(derivative),encoding="utf-8")
+        m=json.loads(json.dumps(self.manifest)); ds=m["datasets"][0]
+        ds["sanitized_derivative"]={"artifact_id":derivative["sanitized_artifact_id"],"path":"sanitized.json","digest":derivative["content_digest"],"raw_artifact_id":raw_record["raw_artifact_id"],"raw_digest":raw_record["raw_digest"],"policy_id":derivative["policy"]["policy_id"],"policy_version":derivative["policy"]["policy_version"],"policy_digest":derivative["policy"]["policy_digest"]}
+        m["manifest_id"]=expected_manifest_id(m); m["content_digest"]=digest({k:v for k,v in m.items() if k!="content_digest"})
+        (self.root/"manifest.json").write_text(json.dumps(m),encoding="utf-8")
+        bundle=build([self.root/"manifest.json"],m["run_id"],m["attempt_id"],m["research_cutoff"],self.root,self.registry)
+        self.assertEqual([],validate_bundle(bundle,self.root,self.registry))
+        changed=json.loads(json.dumps(derivative)); changed["records"][0]["close"]=999.0
+        (self.root/"sanitized.json").write_text(json.dumps(changed),encoding="utf-8")
+        self.assertTrue(any("digest_mismatch" in error or "manifest_digest_binding_mismatch" in error for error in validate_bundle(bundle,self.root,self.registry)))
+        (self.root/"sanitized.json").write_text(json.dumps(derivative),encoding="utf-8")
+        (self.root/"raw/capture.json").write_bytes(raw+b" ")
+        self.assertIn("member[0].sanitized_derivative[0].raw_bytes_digest_mismatch",validate_bundle(bundle,self.root,self.registry))
+    def test_unregistered_policy_version_cannot_bind_new_research_input(self):
+        raw=b'{"records":[{"asset_id":"BTC","close":1.0}]}'
+        policy=json.loads((ROOT/"config/external-data-sanitization-policy.json").read_text(encoding="utf-8"))
+        spec={"source":{"source_id":"source-a","identity_digest":self.manifest["source"]["identity_digest"]},"capability_id":"prices","dataset_id":"prices-1","retrieval_id":"capture-2","retrieved_at":"2026-09-29T00:00:00Z"}
+        raw_record,derivative=build_artifacts(raw,spec,policy,"raw.json","raw-record.json")
+        derivative["policy"]["policy_version"]="99.0.0"
+        identity={key:value for key,value in derivative.items() if key not in {"sanitized_artifact_id","content_digest"}}
+        import hashlib
+        derivative["sanitized_artifact_id"]="san-"+hashlib.sha256(canonical_bytes(identity)).hexdigest()[:24]
+        derivative["content_digest"]=digest({key:value for key,value in derivative.items() if key!="content_digest"})
+        (self.root/"raw.json").write_bytes(raw); (self.root/"raw-record.json").write_text(json.dumps(raw_record),encoding="utf-8")
+        (self.root/"sanitized.json").write_text(json.dumps(derivative),encoding="utf-8")
+        m=json.loads(json.dumps(self.manifest)); ref={"artifact_id":derivative["sanitized_artifact_id"],"path":"sanitized.json","digest":derivative["content_digest"],"raw_artifact_id":raw_record["raw_artifact_id"],"raw_digest":raw_record["raw_digest"],"policy_id":derivative["policy"]["policy_id"],"policy_version":derivative["policy"]["policy_version"],"policy_digest":derivative["policy"]["policy_digest"]}
+        m["schema_version"]="1.1"; m["datasets"][0]["sanitized_derivative"]=ref
+        m["manifest_id"]=expected_manifest_id(m); m["content_digest"]=digest({key:value for key,value in m.items() if key!="content_digest"})
+        (self.root/"manifest.json").write_text(json.dumps(m),encoding="utf-8")
+        bundle=build([self.root/"manifest.json"],m["run_id"],m["attempt_id"],m["research_cutoff"],self.root,self.registry)
+        self.assertIn("member[0].sanitized_derivative[0].unregistered_sanitization_policy",validate_bundle(bundle,self.root,self.registry))
+    def test_sanitization_alone_does_not_admit_unqualified_evidence(self):
+        raw_record,derivative=build_artifacts(b'{"records":[{"asset_id":"BTC","close":1.0}]}',
+            {"source":{"source_id":"source-a","identity_digest":self.manifest["source"]["identity_digest"]},"capability_id":"prices","dataset_id":"prices-1","retrieval_id":"x","retrieved_at":"2026-09-29T00:00:00Z"},
+            json.loads((ROOT/"config/external-data-sanitization-policy.json").read_text(encoding="utf-8")),"raw.json")
+        self.assertTrue(derivative["records"])
+        self.assertFalse(any(key in derivative for key in ("qualification","admissibility","rights","approval","authorization")))
+        m=json.loads(json.dumps(self.manifest)); m["qualification"]="UNQUALIFIED"; m["datasets"][0]["qualification"]="UNQUALIFIED"
+        m["manifest_id"]=expected_manifest_id(m); m["content_digest"]=digest({k:v for k,v in m.items() if k!="content_digest"})
+        self.assertTrue(validate_source_manifest(m,self.registry))
+    def test_new_manifest_schema_requires_sanitization_for_research_inputs(self):
+        manifest=json.loads(json.dumps(self.manifest)); manifest["schema_version"]="1.1"
+        manifest["manifest_id"]=expected_manifest_id(manifest); manifest["content_digest"]=digest({k:v for k,v in manifest.items() if k!="content_digest"})
+        self.assertIn("dataset[0].sanitized_derivative_required_for_new_research_input",validate_source_manifest(manifest,self.registry))
+        manifest["datasets"][0]["sanitized_derivative"]={}
+        manifest["manifest_id"]=expected_manifest_id(manifest); manifest["content_digest"]=digest({k:v for k,v in manifest.items() if k!="content_digest"})
+        self.assertTrue(any("sanitized_derivative" in error and "missing" in error for error in validate_source_manifest(manifest,self.registry)))
     def test_duplicate_source_identity_rejected(self):
         m=self.bundle()["members"][0]; self.assertTrue(any("duplicate_source_identity" in e for e in validate_bundle(self.bundle([m,m]),self.root,self.registry)))
     def test_empty_bundle_rejected_even_with_valid_digests(self):

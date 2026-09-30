@@ -15,7 +15,15 @@ def build(paths: list[Path], run_id: str, attempt_id: str, cutoff: str, root: Pa
         seen.add(source)
         if obj.get("run_id") != run_id or obj.get("attempt_id") != attempt_id or obj.get("research_cutoff") != cutoff:
             raise ValueError(f"source_manifest_identity_mismatch:{source}")
-        members.append({"source_id":source,"manifest_id":obj["manifest_id"],"manifest_path":path.relative_to(root.resolve()).as_posix(),"manifest_digest":obj["content_digest"],"status":obj["status"],"qualification":obj["qualification"],"admissibility":obj["admissibility"]})
+        member={"source_id":source,"manifest_id":obj["manifest_id"],"manifest_path":path.relative_to(root.resolve()).as_posix(),"manifest_digest":obj["content_digest"],"status":obj["status"],"qualification":obj["qualification"],"admissibility":obj["admissibility"]}
+        derivatives=[]
+        for dataset in obj.get("datasets", []):
+            ref=dataset.get("sanitized_derivative")
+            if ref:
+                derivatives.append({"dataset_id":dataset["dataset_id"],**ref})
+        if derivatives:
+            member["sanitized_derivatives"]=sorted(derivatives,key=lambda item:item["dataset_id"])
+        members.append(member)
     members.sort(key=lambda item:item["source_id"])
     base={"schema_version":"1.0","run_id":run_id,"attempt_id":attempt_id,"research_cutoff":cutoff,"members":members}
     obj={"bundle_id":"",**base}; obj["bundle_id"]=expected_bundle_id(obj); obj["content_digest"]=digest(obj)

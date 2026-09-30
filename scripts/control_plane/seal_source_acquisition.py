@@ -7,7 +7,7 @@ from source_evidence import expected_manifest_id, validate_source_manifest
 
 def main() -> int:
     ap=argparse.ArgumentParser(); ap.add_argument("payload"); ap.add_argument("--out", required=True); args=ap.parse_args()
-    obj=json.loads(Path(args.payload).read_text(encoding="utf-8")); obj["manifest_id"]=expected_manifest_id(obj); obj["content_digest"]=digest({k:v for k,v in obj.items() if k!="content_digest"})
+    obj=json.loads(Path(args.payload).read_text(encoding="utf-8")); obj["schema_version"]="1.1"; obj["manifest_id"]=expected_manifest_id(obj); obj["content_digest"]=digest({k:v for k,v in obj.items() if k!="content_digest"})
     errors=validate_source_manifest(obj)
     if errors: print("\n".join(errors)); return 2
     try: write_new_json(args.out,obj)

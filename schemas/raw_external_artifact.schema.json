@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "raw_artifact_id", "source", "capability_id", "dataset_id", "retrieved_at", "retrieval_id", "encoding", "byte_length", "raw_digest", "raw_path", "content_digest"],
+  "properties": {
+    "schema_version": {"const":"1.0"},
+    "raw_artifact_id": {"type":"string","minLength":1},
+    "source": {"type":"object","additionalProperties":false,"required":["source_id","identity_digest"],"properties":{"source_id":{"type":"string","minLength":1},"identity_digest":{"type":"string","pattern":"^sha256:[0-9a-f]{64}$"}}},
+    "capability_id":{"type":"string","minLength":1}, "dataset_id":{"type":"string","minLength":1},
+    "retrieved_at":{"type":"string","format":"date-time"}, "retrieval_id":{"type":"string","minLength":1},
+    "encoding":{"const":"utf-8"}, "byte_length":{"type":"integer","minimum":0},
+    "raw_digest":{"type":"string","pattern":"^sha256:[0-9a-f]{64}$"}, "raw_path":{"type":"string","minLength":1},
+    "content_digest":{"type":"string","pattern":"^sha256:[0-9a-f]{64}$"}
+  }
+}
