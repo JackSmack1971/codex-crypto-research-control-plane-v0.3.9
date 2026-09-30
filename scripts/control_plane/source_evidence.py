@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import hashlib
 import json
+import hashlib
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from common import digest, parse_timestamp, validate_daily_cutoff_contract
+from common import canonical_bytes, digest, parse_timestamp, validate_daily_cutoff_contract
 from validate_artifact import validate as validate_schema
 from validate_sources import identity_payload
 
@@ -22,6 +23,11 @@ def without_digest(obj: dict[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in obj.items() if key != "content_digest"}
 
 
+def expected_manifest_id(obj: dict[str, Any]) -> str:
+    identity = {key: value for key, value in obj.items() if key not in {"manifest_id", "content_digest"}}
+    return "sm-" + hashlib.sha256(canonical_bytes(identity)).hexdigest()[:24]
+
+
 def _load_registry(registry: dict[str, Any] | None) -> dict[str, Any]:
     if registry is not None:
         return registry
@@ -33,6 +39,8 @@ def validate_source_manifest(obj: dict[str, Any], registry: dict[str, Any] | Non
     for key in ("manifest_id", "run_id", "attempt_id", "created_at", "research_cutoff", "source", "capability_id", "status", "datasets", "content_digest"):
         if key not in obj:
             errors.append(f"manifest.missing:{key}")
+    if obj.get("manifest_id") != expected_manifest_id(obj):
+        errors.append("manifest.manifest_id_mismatch")
     source = obj.get("source", {})
     if not isinstance(source, dict):
         errors.append("manifest.source_must_be_object")
@@ -126,6 +134,18 @@ def validate_source_manifest(obj: dict[str, Any], registry: dict[str, Any] | Non
                 freshness = ds.get("freshness_seconds")
                 if isinstance(freshness, int) and cutoff is not None and freshness != int((cutoff-observed).total_seconds()):
                     errors.append(f"{label}.freshness_metadata_mismatch")
+                for timestamp_field in ("published_at", "available_at"):
+                    timestamp_value = ds.get(timestamp_field)
+                    if timestamp_value is None:
+                        continue
+                    try:
+                        timestamp = parse_timestamp(timestamp_value, f"{label}.{timestamp_field}")
+                        if timestamp.utcoffset() is None:
+                            errors.append(f"{label}.{timestamp_field}_must_be_timezone_aware")
+                        elif timestamp >= cutoff:
+                            errors.append(f"{label}.{timestamp_field}_at_or_after_cutoff")
+                    except (ValueError, TypeError, AttributeError) as exc:
+                        errors.append(str(exc))
             except (ValueError, TypeError, AttributeError) as exc: errors.append(str(exc))
         if ds.get("status") == "UNAVAILABLE" and ds.get("evidence_role") == "RESEARCH_INPUT":
             errors.append(f"{label}.unavailable_cannot_be_research_input")
@@ -152,12 +172,16 @@ def validate_bundle(bundle: dict[str, Any], base: Path, registry: dict[str, Any]
     members = bundle.get("members", [])
     if not isinstance(members, list): return errors + ["bundle.members_must_be_list"]
     seen: set[str] = set()
+    seen_manifest_ids: set[str] = set()
     for i, member in enumerate(members):
         label = f"member[{i}]"
         if not isinstance(member, dict): errors.append(f"{label}.must_be_object"); continue
         sid = member.get("source_id")
         if sid in seen: errors.append(f"{label}.duplicate_source_identity:{sid}")
         seen.add(sid)
+        manifest_id = member.get("manifest_id")
+        if manifest_id in seen_manifest_ids: errors.append(f"{label}.duplicate_manifest_identity:{manifest_id}")
+        seen_manifest_ids.add(manifest_id)
         path = (base / str(member.get("manifest_path", ""))).resolve()
         try:
             path.relative_to(base.resolve())
