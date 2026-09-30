@@ -1,6 +1,6 @@
 # Data capability boundary
 
-This is the evidence contract for the Massive-backed end-of-day research system.
+This describes the Massive-backed end-of-day research system and the additive Fin Data MCP evidence boundary. Provider capability presence, actual access, qualification, admission, and CORE/optional treatment remain separate.
 
 ## Three independent capability facts
 
@@ -38,13 +38,15 @@ SEC/institutional, short-interest, and options-proxy families are event-driven b
 
 When effectively accessible and materialized, the architecture can support point-in-time universe control, crypto OHLC/volume/VWAP/trade-count aggregates, U.S. equities, indices, FX, EOD option-contract data, SEC filings/holdings/insider/risk-factor data, and stock short data.
 
+The Fin Data registry currently names read-only crypto instrument discovery, funding, open interest, long/short ratio, mark price, ticker/candles, index candles, order books, and recent public trades. These are registered candidate capabilities only. As of the current qualification record, the production Render MCP endpoint has not been initialized or queried from the governed client, so none is effectively accessible, qualified, or admitted. Basis requires compatible spot and perpetual observations plus their identity/time semantics; tool names alone do not establish those inputs.
+
 ## Crypto limitations
 
 The supplied crypto Basic guide constrains crypto to end-of-day data with two years of history and excludes crypto trades/last trade, snapshots, WebSockets, and flat files. Massive MCP discovery may still expose those broader endpoint families; discoverability is not entitlement.
 
 ## Unsupported claims without new governed data
 
-Do not claim direct evidence for order-book depth/imbalance, liquidations, perpetual funding/basis, futures OI, native-crypto options positioning, whale or wallet activity, exchange flows, stablecoin issuance/flows, social/news sentiment, or real-time catalysts.
+Do not claim direct evidence for order-book depth/imbalance, liquidations, perpetual funding/basis, futures OI, native-crypto options positioning, whale or wallet activity, exchange flows, stablecoin issuance/flows, social/news sentiment, or real-time catalysts unless the exact source capability is qualified, admitted and present in the sealed run evidence. The current Fin Data registry does not change these unsupported-claim boundaries.
 
 ## Transaction-cost boundary
 

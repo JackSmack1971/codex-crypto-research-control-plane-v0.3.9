@@ -1,0 +1,120 @@
+{
+  "schema_version": "1.0",
+  "source_id": "fin_data_mcp_render_prod",
+  "contracts": [
+    {
+      "capability_id": "fin.crypto.instrument_discovery",
+      "status": "UNREGISTERED",
+      "required_fields": [],
+      "field_types": {},
+      "max_age_seconds": null,
+      "effective_time_field": null,
+      "pagination_mode": "UNKNOWN",
+      "units": "UNKNOWN",
+      "notes": "No production response captured."
+    },
+    {
+      "capability_id": "fin.crypto.funding",
+      "status": "UNREGISTERED",
+      "required_fields": [],
+      "field_types": {},
+      "max_age_seconds": null,
+      "effective_time_field": null,
+      "pagination_mode": "UNKNOWN",
+      "units": "UNKNOWN",
+      "notes": "No production response captured."
+    },
+    {
+      "capability_id": "fin.crypto.open_interest",
+      "status": "UNREGISTERED",
+      "required_fields": [],
+      "field_types": {},
+      "max_age_seconds": null,
+      "effective_time_field": null,
+      "pagination_mode": "UNKNOWN",
+      "units": "UNKNOWN",
+      "notes": "No production response captured."
+    },
+    {
+      "capability_id": "fin.crypto.long_short_ratio",
+      "status": "UNREGISTERED",
+      "required_fields": [],
+      "field_types": {},
+      "max_age_seconds": null,
+      "effective_time_field": null,
+      "pagination_mode": "UNKNOWN",
+      "units": "UNKNOWN",
+      "notes": "No production response captured."
+    },
+    {
+      "capability_id": "fin.crypto.mark_price",
+      "status": "UNREGISTERED",
+      "required_fields": [],
+      "field_types": {},
+      "max_age_seconds": null,
+      "effective_time_field": null,
+      "pagination_mode": "UNKNOWN",
+      "units": "UNKNOWN",
+      "notes": "No production response captured."
+    },
+    {
+      "capability_id": "fin.crypto.ticker",
+      "status": "UNREGISTERED",
+      "required_fields": [],
+      "field_types": {},
+      "max_age_seconds": null,
+      "effective_time_field": null,
+      "pagination_mode": "UNKNOWN",
+      "units": "UNKNOWN",
+      "notes": "No production response captured."
+    },
+    {
+      "capability_id": "fin.crypto.orderbook",
+      "status": "UNREGISTERED",
+      "required_fields": [],
+      "field_types": {},
+      "max_age_seconds": null,
+      "effective_time_field": null,
+      "pagination_mode": "UNKNOWN",
+      "units": "UNKNOWN",
+      "notes": "No production response captured."
+    },
+    {
+      "capability_id": "fin.crypto.recent_trades",
+      "status": "UNREGISTERED",
+      "required_fields": [],
+      "field_types": {},
+      "max_age_seconds": null,
+      "effective_time_field": null,
+      "pagination_mode": "UNKNOWN",
+      "units": "UNKNOWN",
+      "notes": "No production response captured."
+    },
+    {
+      "capability_id": "fin.crypto.candles",
+      "status": "UNREGISTERED",
+      "required_fields": [],
+      "field_types": {},
+      "max_age_seconds": null,
+      "effective_time_field": null,
+      "pagination_mode": "UNKNOWN",
+      "units": "UNKNOWN",
+      "notes": "No production response captured."
+    },
+    {
+      "capability_id": "fin.crypto.index_candles",
+      "status": "UNREGISTERED",
+      "required_fields": [],
+      "field_types": {},
+      "max_age_seconds": null,
+      "effective_time_field": null,
+      "pagination_mode": "UNKNOWN",
+      "units": "UNKNOWN",
+      "notes": "No production response captured."
+    }
+  ],
+  "notes": [
+    "All response field types, freshness bounds, pagination semantics and units remain UNREGISTERED until captured from the production endpoint and reviewed.",
+    "Empty contract means the capability cannot qualify or produce a source dataset."
+  ]
+}

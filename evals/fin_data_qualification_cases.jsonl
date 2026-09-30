@@ -1,0 +1,7 @@
+{"id":"fin-endpoint-cold","scenario":"unavailable_endpoint","expected_status":"UNAVAILABLE","expected_fallback":"NONE"}
+{"id":"fin-tool-absent","scenario":"missing_tool","expected_capability_status":"UNAVAILABLE","expected_admitted":false}
+{"id":"fin-result-malformed","scenario":"malformed_response","expected_capability_status":"BLOCKED","expected_admitted":false}
+{"id":"fin-result-stale","scenario":"stale_response","expected_capability_status":"DEGRADED","expected_admitted":false}
+{"id":"fin-response-drift","scenario":"schema_drift","expected_capability_status":"BLOCKED","expected_admitted":false}
+{"id":"fin-partial-loss","scenario":"partial_capability_loss","expected_source_status":"DEGRADED","expected_other_capabilities_independent":true}
+{"id":"fin-qualified","scenario":"successful_qualification","expected_source_status":"QUALIFIED","expected_admitted":false,"expected_admission_separate":true}

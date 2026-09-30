@@ -22,7 +22,7 @@ WORKFLOW_SKILLS = [
     "daily-research-run", "factor-research", "candidate-validation",
     "methodology-audit", "oos-scorekeeping",
 ]
-SUPPORT_SKILLS = ["massive-basic-endpoints", "massive-mcp-data-plane", "candidate-promotion", "performance-governance"]
+SUPPORT_SKILLS = ["massive-basic-endpoints", "massive-mcp-data-plane", "candidate-promotion", "performance-governance", "fin-data-mcp"]
 SKILLS = WORKFLOW_SKILLS + SUPPORT_SKILLS
 SCHEMAS = [
     "hypothesis.schema.json", "agent_handoff.schema.json", "validation_report.schema.json",
@@ -37,6 +37,9 @@ SCHEMAS = [
     "massive_materialization_spec.schema.json", "materialization_reconciliation.schema.json",
     "source_registry.schema.json", "source_qualification.schema.json",
     "source_acquisition_manifest.schema.json", "evidence_bundle.schema.json",
+    "fin_data_request.schema.json", "fin_data_result.schema.json",
+    "fin_data_qualification_report.schema.json",
+    "fin_data_response_contracts.schema.json",
 ]
 MASSIVE_MCP_URL = "https://mcp.massive.com/"
 
@@ -189,6 +192,48 @@ def check_daily_config(errors: list[str]) -> None:
             errors.append(f"daily-capabilities:missing-core:{sorted(required_core-core_ids)}")
     except Exception as exc:
         errors.append(f"daily-capabilities:invalid:{exc}")
+
+
+def check_fin_data_config(errors: list[str]) -> None:
+    try:
+        source = json.loads((ROOT / "config" / "source-capabilities" / "fin-data.json").read_text(encoding="utf-8"))
+        policy = json.loads((ROOT / "config" / "fin-data-request-policy.json").read_text(encoding="utf-8"))
+        contracts = json.loads((ROOT / "config" / "fin-data-response-contracts.json").read_text(encoding="utf-8"))
+        response_schema = json.loads((ROOT / "schemas" / "fin_data_response_contracts.schema.json").read_text(encoding="utf-8"))
+        from validate_artifact import validate as validate_schema
+        errors.extend(f"fin-data-response-contracts.schema:{item}" for item in validate_schema(contracts, response_schema))
+        ids = [item.get("capability_id") for item in source.get("capabilities", [])]
+        if source.get("source_id") != "fin_data_mcp_render_prod":
+            errors.append("fin-data-capabilities:source-identity-mismatch")
+        if len(ids) != len(set(ids)) or not ids:
+            errors.append("fin-data-capabilities:duplicate-or-empty-identities")
+        for item in source.get("capabilities", []):
+            if item.get("requirement") not in {"CORE", "ENRICHMENT", "ASSET_OPTIONAL", "EVENT_OPTIONAL"}:
+                errors.append(f"fin-data-capabilities:invalid-requirement:{item.get('capability_id')}")
+            if item.get("severity") not in {"INFO", "DEGRADED", "BLOCKING"}:
+                errors.append(f"fin-data-capabilities:invalid-severity:{item.get('capability_id')}")
+            if item.get("admission") != "DISABLED_UNTIL_QUALIFIED":
+                errors.append(f"fin-data-capabilities:unexpected-admission:{item.get('capability_id')}")
+            if not str(item.get("tool_name", "")).startswith("crypto_"):
+                errors.append(f"fin-data-capabilities:non-crypto-tool:{item.get('capability_id')}")
+        if policy.get("source_id") != source.get("source_id") or policy.get("require_permit_before_call") is not True:
+            errors.append("fin-data-request-policy:invalid-source-or-permit")
+        if policy.get("record_result_immediately") is not True or policy.get("halt_on_rate_limit_warning") is not True:
+            errors.append("fin-data-request-policy:missing-result-or-rate-limit-control")
+        if policy.get("max_in_flight") != 1 or policy.get("rate_limit_recovery") != "NEW_ATTEMPT_REQUIRED":
+            errors.append("fin-data-request-policy:invalid-concurrency-or-recovery")
+        contract_ids = [item.get("capability_id") for item in contracts.get("contracts", [])]
+        if contracts.get("source_id") != source.get("source_id") or set(contract_ids) != set(ids) or len(contract_ids) != len(set(contract_ids)):
+            errors.append("fin-data-response-contracts:capability-identity-mismatch")
+        for contract in contracts.get("contracts", []):
+            if contract.get("status") == "REGISTERED" and (
+                not contract.get("required_fields") or not contract.get("field_types")
+                or not isinstance(contract.get("max_age_seconds"), int)
+                or contract.get("pagination_mode") not in {"SINGLE_RESPONSE", "CURSOR", "PAGE_TOKEN", "NONE"}
+            ):
+                errors.append(f"fin-data-response-contracts:incomplete:{contract.get('capability_id')}")
+    except Exception as exc:
+        errors.append(f"fin-data-config:invalid:{exc}")
     try:
         model = json.loads((ROOT / "config" / "daily-model.json").read_text(encoding="utf-8"))
         weights = model.get("factor_weights", {})
@@ -260,6 +305,7 @@ def main() -> int:
         "scripts/control_plane/preflight.py", "scripts/control_plane/discover_run.py",
         "scripts/control_plane/evaluate_capabilities.py", "scripts/control_plane/materialize_mcp_dataset.py", "scripts/control_plane/materialize_mcp_dataset.cmd", "scripts/control_plane/reconcile_materializations.py", "scripts/control_plane/path_policy.py",
         "scripts/control_plane/massive_request_gate.py",
+        "scripts/control_plane/fin_data_source.py", "scripts/control_plane/fin_data_request_gate.py",
         "scripts/control_plane/source_evidence.py", "scripts/control_plane/validate_sources.py",
         "scripts/control_plane/seal_source_acquisition.py", "scripts/control_plane/build_evidence_bundle.py", "scripts/control_plane/verify_evidence_bundle.py",
         "scripts/control_plane/bootstrap.cmd", "scripts/control_plane/bootstrap.ps1",
@@ -268,6 +314,8 @@ def main() -> int:
         ".agents/skills/massive-basic-endpoints/scripts/endpoint_lookup.ps1",
         "config/daily-capabilities.json", "config/daily-model.json", "config/massive-request-policy.json", "config/python-runtime-policy.json",
         "config/source-registry.json", "docs/evidence-bundle-contract.md",
+        "config/source-capabilities/fin-data.json", "config/fin-data-request-policy.json",
+        "config/fin-data-response-contracts.json",
     ]
     for rel in required:
         if not (ROOT / rel).is_file():
@@ -285,6 +333,9 @@ def main() -> int:
         massive_cfg = config.get("mcp_servers", {}).get("massive", {})
         if massive_cfg.get("url") != MASSIVE_MCP_URL:
             errors.append(f"massive-mcp-config-url:{massive_cfg.get('url', 'MISSING')}")
+        fin_cfg = config.get("mcp_servers", {}).get("fin_data", {})
+        if fin_cfg.get("url") != "https://fin-data-mcp-http-v02-prod.onrender.com/mcp":
+            errors.append(f"fin-data-mcp-config-url:{fin_cfg.get('url', 'MISSING')}")
     except (OSError, tomllib.TOMLDecodeError) as exc:
         errors.append(f"invalid-config-toml:{exc}")
 
@@ -305,12 +356,16 @@ def main() -> int:
             errors.append(f"invalid-schema-json:{name}:{exc}")
 
     check_daily_config(errors)
+    check_fin_data_config(errors)
     try:
         from validate_sources import validate as validate_source_registry
         source_registry = json.loads((ROOT / "config" / "source-registry.json").read_text(encoding="utf-8"))
         errors.extend(validate_source_registry(source_registry))
-        if not any(item.get("source_id") == "massive_mcp" for item in source_registry.get("sources", [])):
+        source_ids = {item.get("source_id") for item in source_registry.get("sources", [])}
+        if "massive_mcp" not in source_ids:
             errors.append("source-registry:massive-mcp-identity-missing")
+        if "fin_data_mcp_render_prod" not in source_ids:
+            errors.append("source-registry:fin-data-identity-missing")
     except Exception as exc:
         errors.append(f"source-registry:invalid:{exc}")
     check_python_network_bypass(errors)
@@ -324,7 +379,7 @@ def main() -> int:
     print(
         f"PASS: {len(AGENTS)} agents, {len(SKILLS)} skills "
         f"({len(WORKFLOW_SKILLS)} workflow + {len(SUPPORT_SKILLS)} support), "
-        f"{len(SCHEMAS)} schemas, Massive MCP configured, deterministic daily pipeline present"
+        f"{len(SCHEMAS)} schemas, Massive and Fin Data MCP configured, deterministic daily pipeline present"
     )
     return 0
 

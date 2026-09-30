@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "source_id", "identity_digest", "endpoint_url", "deployment_id", "observed_at", "endpoint_status", "status", "capabilities", "fallback", "snapshot_digest", "capability_policy_digest"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "source_id": {"const": "fin_data_mcp_render_prod"},
+    "identity_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "endpoint_url": {"type": "string", "format": "uri"},
+    "deployment_id": {"type": ["string", "null"]},
+    "observed_at": {"type": "string", "format": "date-time"},
+    "endpoint_status": {"enum": ["AVAILABLE", "UNAVAILABLE", "BLOCKED"]},
+    "endpoint_reason": {"type": ["string", "null"]},
+    "status": {"enum": ["QUALIFIED", "DEGRADED", "BLOCKED", "UNAVAILABLE"]},
+    "capabilities": {"type": "object", "additionalProperties": {"type": "object", "required": ["tool_name", "status", "severity", "reason", "age_seconds", "admitted"], "properties": {"tool_name": {"type": "string"}, "status": {"enum": ["QUALIFIED", "DEGRADED", "BLOCKED", "UNAVAILABLE"]}, "severity": {"enum": ["INFO", "DEGRADED", "BLOCKING"]}, "reason": {"type": ["string", "null"]}, "age_seconds": {"type": ["integer", "null"], "minimum": 0}, "admitted": {"type": "boolean"}}}},
+    "fallback": {"const": "NONE"},
+    "snapshot_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "capability_policy_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "observed_endpoint_url": {"type": ["string", "null"], "format": "uri"},
+    "health_severity": {"enum": ["INFO", "DEGRADED", "BLOCKING"]},
+    "response_contract_policy_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "ledger_digest": {"type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$"},
+    "ledger_errors": {"type": "array", "items": {"type": "string"}}
+  }
+}

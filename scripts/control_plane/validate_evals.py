@@ -55,10 +55,20 @@ def main() -> int:
         if not row.get("success_criteria"):
             errors.append(f"task-missing-rubric:{row.get('id')}")
 
+    fin_data = load_jsonl(ROOT / "evals" / "fin_data_qualification_cases.jsonl")
+    fin_ids = [row.get("id") for row in fin_data]
+    fin_scenarios = {row.get("scenario") for row in fin_data}
+    required_fin_scenarios = {
+        "unavailable_endpoint", "missing_tool", "malformed_response", "stale_response",
+        "schema_drift", "partial_capability_loss", "successful_qualification",
+    }
+    if len(fin_ids) != len(set(fin_ids)) or fin_scenarios != required_fin_scenarios:
+        errors.append(f"fin-data-eval-coverage:{sorted(fin_scenarios)}")
+
     if errors:
         print("\n".join(errors))
         return 1
-    print("PASS: routing corpus 20 positive / 20 negative / 10 neighbor; task corpus 10 representative / 20 failure")
+    print("PASS: routing corpus 20 positive / 20 negative / 10 neighbor; task corpus 10 representative / 20 failure; Fin Data qualification 7 scenarios")
     return 0
 
 

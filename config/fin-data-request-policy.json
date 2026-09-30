@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "source_id": "fin_data_mcp_render_prod",
+  "covered_operations": ["tools/list", "tools/call"],
+  "require_permit_before_call": true,
+  "record_result_immediately": true,
+  "halt_on_rate_limit_warning": true,
+  "rate_limit_recovery": "NEW_ATTEMPT_REQUIRED",
+  "provider_rate_limit": "UNKNOWN",
+  "max_in_flight": 1,
+  "notes": [
+    "The provider rate limit and retention/storage terms have not been verified; do not claim entitlement from endpoint discovery.",
+    "A connector catalog is not a production endpoint qualification record."
+  ]
+}

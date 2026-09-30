@@ -15,7 +15,7 @@ class StructureTests(unittest.TestCase):
             capture_output=True,
         )
         self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
-        self.assertIn("PASS: 9 agents, 9 skills (5 workflow + 4 support), 24 schemas, Massive MCP configured, deterministic daily pipeline present", proc.stdout)
+        self.assertIn("PASS: 9 agents, 10 skills (5 workflow + 5 support), 28 schemas, Massive and Fin Data MCP configured, deterministic daily pipeline present", proc.stdout)
 
     def test_eval_corpus_validator(self):
         proc = subprocess.run(
@@ -26,6 +26,7 @@ class StructureTests(unittest.TestCase):
         )
         self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
         self.assertIn("routing corpus 20 positive / 20 negative / 10 neighbor", proc.stdout)
+        self.assertIn("Fin Data qualification 7 scenarios", proc.stdout)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,13 @@
+interface:
+  display_name: "Fin Data MCP"
+  short_description: "Acquire governed crypto evidence through Fin Data MCP"
+  default_prompt: "Use $fin-data-mcp to qualify and acquire read-only crypto evidence from the configured production MCP endpoint, preserve provenance, and record explicit capability health."
+policy:
+  allow_implicit_invocation: false
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "fin_data"
+      description: "Render-hosted Fin Data read-only crypto evidence"
+      transport: "streamable_http"
+      url: "https://fin-data-mcp-http-v02-prod.onrender.com/mcp"

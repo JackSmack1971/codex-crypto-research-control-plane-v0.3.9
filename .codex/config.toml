@@ -8,3 +8,8 @@ max_depth = 1
 
 [mcp_servers.massive]
 url = "https://mcp.massive.com/"
+
+# Read-only source for governed crypto evidence. Source identity lives in
+# config/source-registry.json; this endpoint is only its runtime route.
+[mcp_servers.fin_data]
+url = "https://fin-data-mcp-http-v02-prod.onrender.com/mcp"

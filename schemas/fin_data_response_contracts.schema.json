@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "source_id", "contracts", "notes"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "source_id": {"const": "fin_data_mcp_render_prod"},
+    "contracts": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+      "required": ["capability_id", "status", "required_fields", "field_types", "max_age_seconds", "effective_time_field", "pagination_mode", "units", "notes"],
+      "properties": {
+        "capability_id": {"type": "string", "minLength": 1},
+        "status": {"enum": ["UNREGISTERED", "REGISTERED"]},
+        "required_fields": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "field_types": {"type": "object", "additionalProperties": {"enum": ["string", "number", "integer", "boolean", "array", "object"]}},
+        "max_age_seconds": {"type": ["integer", "null"], "minimum": 0},
+        "effective_time_field": {"type": ["string", "null"]},
+        "pagination_mode": {"enum": ["UNKNOWN", "SINGLE_RESPONSE", "CURSOR", "PAGE_TOKEN", "NONE"]},
+        "units": {"type": "string", "minLength": 1},
+        "notes": {"type": "string"}
+      }}},
+    "notes": {"type": "array", "items": {"type": "string"}}
+  }
+}
