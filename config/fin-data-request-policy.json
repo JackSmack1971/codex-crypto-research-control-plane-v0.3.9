@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "source_id": "fin_data_mcp_render_prod",
-  "covered_operations": ["tools/list", "tools/call"],
+  "covered_operations": ["initialize", "tools/list", "tools/call"],
   "control_operations": [
     {"capability_id": "fin.mcp.initialize", "tool_name": "initialize"},
     {"capability_id": "fin.mcp.tools_list", "tool_name": "tools/list"}
