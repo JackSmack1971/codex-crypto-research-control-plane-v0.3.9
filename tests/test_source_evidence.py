@@ -29,6 +29,9 @@ class SourceEvidenceTests(unittest.TestCase):
         self.assertEqual([],validate_bundle(output,self.root,self.registry)); self.assertEqual(self.manifest["content_digest"],output["members"][0]["manifest_digest"])
     def test_duplicate_source_identity_rejected(self):
         m=self.bundle()["members"][0]; self.assertTrue(any("duplicate_source_identity" in e for e in validate_bundle(self.bundle([m,m]),self.root,self.registry)))
+    def test_empty_bundle_rejected_even_with_valid_digests(self):
+        b=self.bundle([]); b["members"]=[]; b["bundle_id"]=expected_bundle_id(b); b["content_digest"]=digest({k:v for k,v in b.items() if k!="content_digest"})
+        self.assertTrue(any("minItems" in e or "members_must_be_nonempty" in e for e in validate_bundle(b,self.root,self.registry)))
     def test_manifest_digest_tampering_rejected(self):
         changed=dict(self.manifest); changed["status"]="DEGRADED"
         self.assertIn("manifest.content_digest_mismatch",validate_source_manifest(changed))

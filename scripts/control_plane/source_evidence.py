@@ -178,6 +178,7 @@ def validate_bundle(bundle: dict[str, Any], base: Path, registry: dict[str, Any]
         errors.append(str(exc))
     members = bundle.get("members", [])
     if not isinstance(members, list): return errors + ["bundle.members_must_be_list"]
+    if not members: errors.append("bundle.members_must_be_nonempty")
     seen: set[str] = set()
     seen_manifest_ids: set[str] = set()
     for i, member in enumerate(members):
