@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "sources": [
+    {
+      "source_id": "massive_mcp",
+      "provider": "Massive",
+      "runtime": "https://mcp.massive.com/",
+      "transport": "streamable_http",
+      "adapter_id": "massive_mcp",
+      "adapter_version": "0.3.9-legacy-contract",
+      "capability_ids": [
+        "daily-capabilities-v0.3.9"
+      ],
+      "identity_digest": "sha256:c2d55666514ffb5bb6bedde4b11933e3de9e8c8f327564060a20ddb57c6cae70"
+    }
+  ]
+}

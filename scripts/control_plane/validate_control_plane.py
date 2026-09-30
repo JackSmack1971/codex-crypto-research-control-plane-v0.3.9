@@ -22,7 +22,7 @@ WORKFLOW_SKILLS = [
     "daily-research-run", "factor-research", "candidate-validation",
     "methodology-audit", "oos-scorekeeping",
 ]
-SUPPORT_SKILLS = ["massive-basic-endpoints", "massive-mcp-data-plane"]
+SUPPORT_SKILLS = ["massive-basic-endpoints", "massive-mcp-data-plane", "candidate-promotion", "performance-governance"]
 SKILLS = WORKFLOW_SKILLS + SUPPORT_SKILLS
 SCHEMAS = [
     "hypothesis.schema.json", "agent_handoff.schema.json", "validation_report.schema.json",
@@ -35,6 +35,8 @@ SCHEMAS = [
     "windows_bootstrap.schema.json", "python_runtime.schema.json",
     "massive_request_spec.schema.json", "massive_request_result.schema.json",
     "massive_materialization_spec.schema.json", "materialization_reconciliation.schema.json",
+    "source_registry.schema.json", "source_qualification.schema.json",
+    "source_acquisition_manifest.schema.json", "evidence_bundle.schema.json",
 ]
 MASSIVE_MCP_URL = "https://mcp.massive.com/"
 
@@ -258,11 +260,14 @@ def main() -> int:
         "scripts/control_plane/preflight.py", "scripts/control_plane/discover_run.py",
         "scripts/control_plane/evaluate_capabilities.py", "scripts/control_plane/materialize_mcp_dataset.py", "scripts/control_plane/materialize_mcp_dataset.cmd", "scripts/control_plane/reconcile_materializations.py", "scripts/control_plane/path_policy.py",
         "scripts/control_plane/massive_request_gate.py",
+        "scripts/control_plane/source_evidence.py", "scripts/control_plane/validate_sources.py",
+        "scripts/control_plane/seal_source_acquisition.py", "scripts/control_plane/build_evidence_bundle.py", "scripts/control_plane/verify_evidence_bundle.py",
         "scripts/control_plane/bootstrap.cmd", "scripts/control_plane/bootstrap.ps1",
         "scripts/control_plane/search_repo.cmd", "scripts/control_plane/search_repo.ps1",
         "scripts/control_plane/validate_artifact.py", "scripts/control_plane/validate_artifact.cmd", "scripts/control_plane/validate_control_plane.cmd", "scripts/control_plane/run_tests.cmd", "scripts/control_plane/run_python.cmd", "scripts/control_plane/run_python.ps1", "scripts/control_plane/run_tests.py", "scripts/pipeline/run_daily_pipeline.py",
         ".agents/skills/massive-basic-endpoints/scripts/endpoint_lookup.ps1",
         "config/daily-capabilities.json", "config/daily-model.json", "config/massive-request-policy.json", "config/python-runtime-policy.json",
+        "config/source-registry.json", "docs/evidence-bundle-contract.md",
     ]
     for rel in required:
         if not (ROOT / rel).is_file():
@@ -300,6 +305,14 @@ def main() -> int:
             errors.append(f"invalid-schema-json:{name}:{exc}")
 
     check_daily_config(errors)
+    try:
+        from validate_sources import validate as validate_source_registry
+        source_registry = json.loads((ROOT / "config" / "source-registry.json").read_text(encoding="utf-8"))
+        errors.extend(validate_source_registry(source_registry))
+        if not any(item.get("source_id") == "massive_mcp" for item in source_registry.get("sources", [])):
+            errors.append("source-registry:massive-mcp-identity-missing")
+    except Exception as exc:
+        errors.append(f"source-registry:invalid:{exc}")
     check_python_network_bypass(errors)
     if args.package:
         check_package_hygiene(errors)
