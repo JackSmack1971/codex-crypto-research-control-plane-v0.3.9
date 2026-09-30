@@ -10,6 +10,8 @@ from pathlib import Path
 sys.dont_write_bytecode = True
 
 from path_policy import TRANSIENT_PARTS, TRANSIENT_SUFFIXES, is_project_source
+from common import digest
+from validate_artifact import validate as validate_schema
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -37,6 +39,8 @@ SCHEMAS = [
     "massive_materialization_spec.schema.json", "materialization_reconciliation.schema.json",
     "source_registry.schema.json", "source_qualification.schema.json",
     "source_acquisition_manifest.schema.json", "evidence_bundle.schema.json",
+    "raw_external_artifact.schema.json", "sanitized_external_artifact.schema.json",
+    "sanitization_policy_registry.schema.json",
 ]
 MASSIVE_MCP_URL = "https://mcp.massive.com/"
 
@@ -246,6 +250,25 @@ def check_release_state_clean(errors: list[str]) -> None:
                 errors.append(f"release-seeded-runtime-artifact:{path.relative_to(ROOT).as_posix()}")
 
 
+def check_sanitization_policy(errors: list[str]) -> None:
+    try:
+        policy = json.loads((ROOT / "config/external-data-sanitization-policy.json").read_text(encoding="utf-8"))
+        registry = json.loads((ROOT / "config/external-data-sanitization-policy-registry.json").read_text(encoding="utf-8"))
+        schema = json.loads((ROOT / "schemas/sanitization_policy_registry.schema.json").read_text(encoding="utf-8"))
+        errors.extend(f"sanitization-policy-registry:{item}" for item in validate_schema(registry, schema))
+        identity = (policy.get("policy_id"), policy.get("policy_version"), digest(policy))
+        entries = [(item.get("policy_id"), item.get("policy_version"), item.get("policy_digest"))
+                   for item in registry.get("policies", [])]
+        if len(entries) != len(set(entries)):
+            errors.append("sanitization-policy-registry:duplicate-identity")
+        if identity not in entries:
+            errors.append("sanitization-policy-registry:current-policy-not-registered")
+        if policy.get("historical_artifacts_refresh") is not False:
+            errors.append("sanitization-policy:historical-refresh-must-be-disabled")
+    except Exception as exc:
+        errors.append(f"sanitization-policy:invalid:{type(exc).__name__}")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--package", action="store_true", help="also fail on transient packaging artifacts")
@@ -268,6 +291,8 @@ def main() -> int:
         ".agents/skills/massive-basic-endpoints/scripts/endpoint_lookup.ps1",
         "config/daily-capabilities.json", "config/daily-model.json", "config/massive-request-policy.json", "config/python-runtime-policy.json",
         "config/source-registry.json", "docs/evidence-bundle-contract.md",
+        "config/external-data-sanitization-policy.json", "config/external-data-sanitization-policy-registry.json",
+        "scripts/control_plane/sanitize_external_data.py", "docs/untrusted-evidence-boundary.md",
     ]
     for rel in required:
         if not (ROOT / rel).is_file():
@@ -305,6 +330,7 @@ def main() -> int:
             errors.append(f"invalid-schema-json:{name}:{exc}")
 
     check_daily_config(errors)
+    check_sanitization_policy(errors)
     try:
         from validate_sources import validate as validate_source_registry
         source_registry = json.loads((ROOT / "config" / "source-registry.json").read_text(encoding="utf-8"))

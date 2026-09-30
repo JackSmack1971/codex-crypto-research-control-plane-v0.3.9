@@ -55,10 +55,20 @@ def main() -> int:
         if not row.get("success_criteria"):
             errors.append(f"task-missing-rubric:{row.get('id')}")
 
+    security = json.loads((ROOT / "evals" / "external_data_security_cases.json").read_text(encoding="utf-8"))
+    security_ids = [row.get("id") for row in security.get("cases", []) if isinstance(row, dict)]
+    required_security = {"token-prompt-injection", "protocol-override-agents", "fake-approval-authorization",
+                         "embedded-tool-invocation", "malicious-url", "source-and-tool-shadow",
+                         "nested-hostile-text-valid-number", "unexpected-field", "conflicting-semantic-fields"}
+    if len(security_ids) != len(set(security_ids)) or not required_security.issubset(set(security_ids)):
+        errors.append("external-data-security-corpus:duplicate-or-missing-required-case")
+    if any(not isinstance(case.get("payload"), dict) for case in security.get("cases", []) if isinstance(case, dict)):
+        errors.append("external-data-security-corpus:payload-must-be-object")
+
     if errors:
         print("\n".join(errors))
         return 1
-    print("PASS: routing corpus 20 positive / 20 negative / 10 neighbor; task corpus 10 representative / 20 failure")
+    print("PASS: routing corpus 20 positive / 20 negative / 10 neighbor; task corpus 10 representative / 20 failure; external-data security corpus 9+ adversarial cases")
     return 0
 
 

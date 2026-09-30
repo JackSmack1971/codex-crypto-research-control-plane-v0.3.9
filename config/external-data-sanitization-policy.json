@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "policy_id": "provider-independent-observation-v1",
+  "policy_version": "1.0.0",
+  "max_payload_bytes": 10485760,
+  "max_depth": 12,
+  "max_collection_items": 10000,
+  "max_string_chars": 4096,
+  "max_records": 10000,
+  "record_fields": {
+    "asset_id": "identifier",
+    "instrument_id": "identifier",
+    "contract_id": "identifier",
+    "metric_id": "identifier",
+    "venue_id": "identifier",
+    "observed_at": "timestamp",
+    "published_at": "timestamp",
+    "available_at": "timestamp",
+    "interval": "interval",
+    "sequence": "integer",
+    "value": "number",
+    "open": "number",
+    "high": "number",
+    "low": "number",
+    "close": "number",
+    "volume": "number"
+  },
+  "identifier_pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+  "interval_pattern": "^[1-9][0-9]{0,3}(?:s|m|h|d|w|M)$",
+  "identifier_output": "OPAQUE_SHA256",
+  "aliases": {
+    "symbol": "asset_id",
+    "ticker": "asset_id",
+    "timestamp": "observed_at",
+    "time": "observed_at",
+    "price": "value"
+  },
+  "metadata_fields": ["token_name", "name", "label", "description", "protocol_description", "project_description", "url", "error", "message", "warning", "contract_metadata", "tool_name", "source_name", "provider", "title"],
+  "allowed_top_level_fields": ["records", "data", "results", "metadata", "content", "structuredContent", "nextCursor", "status", "error", "message", "warning"],
+  "url_policy": "REDACT_IN_TEXT_AND_REJECT_IN_NUMERIC_FIELDS",
+  "historical_artifacts_refresh": false
+}

@@ -1,0 +1,14 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","additionalProperties":false,
+  "required":["schema_version","sanitized_artifact_id","raw_artifact_id","raw_digest","raw_path","raw_record_path","raw_artifact_record_digest","retrieval_id","retrieved_at","source","capability_id","dataset_id","policy","records","text_evidence","diagnostics","content_digest"],
+  "properties":{
+    "schema_version":{"const":"1.0"},"sanitized_artifact_id":{"type":"string","minLength":1},"raw_artifact_id":{"type":"string","minLength":1},"raw_digest":{"type":"string","pattern":"^sha256:[0-9a-f]{64}$"},"raw_path":{"type":"string","minLength":1},"raw_record_path":{"type":"string","minLength":1},"raw_artifact_record_digest":{"type":"string","pattern":"^sha256:[0-9a-f]{64}$"},"retrieval_id":{"type":"string","minLength":1},"retrieved_at":{"type":"string","format":"date-time"},
+    "source":{"type":"object","additionalProperties":false,"required":["source_id","identity_digest"],"properties":{"source_id":{"type":"string","minLength":1},"identity_digest":{"type":"string","pattern":"^sha256:[0-9a-f]{64}$"}}},
+    "capability_id":{"type":"string","minLength":1},"dataset_id":{"type":"string","minLength":1},
+    "policy":{"type":"object","additionalProperties":false,"required":["policy_id","policy_version","policy_digest"],"properties":{"policy_id":{"type":"string"},"policy_version":{"type":"string"},"policy_digest":{"type":"string","pattern":"^sha256:[0-9a-f]{64}$"}}},
+    "records":{"type":"array","items":{"type":"object","additionalProperties":false,"properties":{"asset_id":{"type":"string","pattern":"^extid:[0-9a-f]{64}$"},"instrument_id":{"type":"string","pattern":"^extid:[0-9a-f]{64}$"},"contract_id":{"type":"string","pattern":"^extid:[0-9a-f]{64}$"},"metric_id":{"type":"string","pattern":"^extid:[0-9a-f]{64}$"},"venue_id":{"type":"string","pattern":"^extid:[0-9a-f]{64}$"},"observed_at":{"type":"string","format":"date-time"},"published_at":{"type":"string","format":"date-time"},"available_at":{"type":"string","format":"date-time"},"interval":{"type":"string","pattern":"^[1-9][0-9]{0,3}(?:s|m|h|d|w|M)$"},"sequence":{"type":"integer"},"value":{"type":"number"},"open":{"type":"number"},"high":{"type":"number"},"low":{"type":"number"},"close":{"type":"number"},"volume":{"type":"number"}}}},
+    "text_evidence":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["path","text"],"properties":{"path":{"type":"string"},"text":{"type":"string"}}}},
+    "diagnostics":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["code","path","action"],"properties":{"code":{"type":"string"},"path":{"type":"string"},"action":{"enum":["DROPPED","TRUNCATED","REJECTED","REDACTED"]}}}},
+    "content_digest":{"type":"string","pattern":"^sha256:[0-9a-f]{64}$"}
+  }
+}

@@ -122,6 +122,8 @@ def validate_source_manifest(obj: dict[str, Any], registry: dict[str, Any] | Non
             if key not in ds: errors.append(f"{label}.missing:{key}")
         if ds.get("evidence_role") not in {"RESEARCH_INPUT", "DIAGNOSTIC"}:
             errors.append(f"{label}.invalid_evidence_role")
+        if obj.get("schema_version") == "1.1" and ds.get("evidence_role") == "RESEARCH_INPUT" and not isinstance(ds.get("sanitized_derivative"), dict):
+            errors.append(f"{label}.sanitized_derivative_required_for_new_research_input")
         if ds.get("evidence_role") == "RESEARCH_INPUT" and (ds.get("admissibility") != "ADMITTED" or ds.get("qualification") != "QUALIFIED"):
             errors.append(f"{label}.research_input_not_qualified_and_admitted")
         if ds.get("evidence_role") == "RESEARCH_INPUT" and (ds.get("pagination_complete") is not True or ds.get("status") != "COMPLETE"):
@@ -206,6 +208,85 @@ def validate_bundle(bundle: dict[str, Any], base: Path, registry: dict[str, Any]
             errors.append(f"{label}.source_identity_mismatch")
         if manifest.get("content_digest") != member.get("manifest_digest"):
             errors.append(f"{label}.manifest_digest_binding_mismatch")
+        expected_derivatives = []
+        for dataset in manifest.get("datasets", []):
+            ref = dataset.get("sanitized_derivative") if isinstance(dataset, dict) else None
+            if ref:
+                expected_derivatives.append({"dataset_id": dataset.get("dataset_id"), **ref})
+        expected_derivatives.sort(key=lambda item: item["dataset_id"])
+        actual_derivatives = member.get("sanitized_derivatives", [])
+        if not isinstance(actual_derivatives, list):
+            errors.append(f"{label}.sanitized_derivatives_must_be_list")
+            actual_derivatives = []
+        if expected_derivatives != actual_derivatives:
+            errors.append(f"{label}.sanitized_derivative_binding_mismatch")
+        for derivative_index, reference in enumerate(actual_derivatives):
+            derivative_label = f"{label}.sanitized_derivative[{derivative_index}]"
+            derivative_path = (base / str(reference.get("path", ""))).resolve()
+            try:
+                derivative_path.relative_to(base.resolve())
+            except ValueError:
+                errors.append(f"{derivative_label}.path_escapes_bundle_root")
+                continue
+            try:
+                derivative = json.loads(derivative_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError) as exc:
+                errors.append(f"{derivative_label}.unreadable:{type(exc).__name__}")
+                continue
+            errors.extend(_schema_errors(derivative, "sanitized_external_artifact.schema.json", derivative_label))
+            if derivative.get("content_digest") != digest(without_digest(derivative)):
+                errors.append(f"{derivative_label}.digest_mismatch")
+            identity = {key: value for key, value in derivative.items() if key not in {"sanitized_artifact_id", "content_digest"}}
+            expected_id = "san-" + hashlib.sha256(canonical_bytes(identity)).hexdigest()[:24]
+            if derivative.get("sanitized_artifact_id") != expected_id:
+                errors.append(f"{derivative_label}.identity_mismatch")
+            if derivative.get("sanitized_artifact_id") != reference.get("artifact_id") or derivative.get("content_digest") != reference.get("digest"):
+                errors.append(f"{derivative_label}.manifest_digest_binding_mismatch")
+            if derivative.get("raw_artifact_id") != reference.get("raw_artifact_id") or derivative.get("raw_digest") != reference.get("raw_digest"):
+                errors.append(f"{derivative_label}.raw_identity_binding_mismatch")
+            try:
+                raw_path = (base / str(derivative.get("raw_path", ""))).resolve()
+                raw_path.relative_to(base.resolve())
+                raw_bytes = raw_path.read_bytes()
+                if "sha256:" + hashlib.sha256(raw_bytes).hexdigest() != derivative.get("raw_digest"):
+                    errors.append(f"{derivative_label}.raw_bytes_digest_mismatch")
+            except (OSError, ValueError) as exc:
+                errors.append(f"{derivative_label}.raw_evidence_unreadable:{type(exc).__name__}")
+            try:
+                raw_record_path = (base / str(derivative.get("raw_record_path", ""))).resolve()
+                raw_record_path.relative_to(base.resolve())
+                raw_record = json.loads(raw_record_path.read_text(encoding="utf-8"))
+                errors.extend(_schema_errors(raw_record, "raw_external_artifact.schema.json", derivative_label + ".raw_record"))
+                if raw_record.get("content_digest") != digest(without_digest(raw_record)):
+                    errors.append(f"{derivative_label}.raw_record_digest_mismatch")
+                if raw_record.get("content_digest") != derivative.get("raw_artifact_record_digest"):
+                    errors.append(f"{derivative_label}.raw_record_binding_mismatch")
+                for key in ("raw_artifact_id", "raw_digest", "raw_path", "source", "capability_id", "dataset_id", "retrieval_id", "retrieved_at"):
+                    if raw_record.get(key) != derivative.get(key):
+                        errors.append(f"{derivative_label}.raw_record_identity_mismatch:{key}")
+                if raw_record.get("byte_length") != len(raw_bytes):
+                    errors.append(f"{derivative_label}.raw_record_byte_length_mismatch")
+            except (OSError, ValueError, json.JSONDecodeError) as exc:
+                errors.append(f"{derivative_label}.raw_record_unreadable:{type(exc).__name__}")
+            policy = derivative.get("policy", {})
+            if any(policy.get(key) != reference.get(ref_key) for key, ref_key in (("policy_id","policy_id"),("policy_version","policy_version"),("policy_digest","policy_digest"))):
+                errors.append(f"{derivative_label}.policy_identity_binding_mismatch")
+            try:
+                policy_registry = json.loads((ROOT / "config" / "external-data-sanitization-policy-registry.json").read_text(encoding="utf-8"))
+                accepted = {(entry.get("policy_id"), entry.get("policy_version"), entry.get("policy_digest"))
+                            for entry in policy_registry.get("policies", [])}
+                if (policy.get("policy_id"), policy.get("policy_version"), policy.get("policy_digest")) not in accepted:
+                    errors.append(f"{derivative_label}.unregistered_sanitization_policy")
+            except (OSError, json.JSONDecodeError, TypeError):
+                errors.append(f"{derivative_label}.sanitization_policy_registry_invalid")
+            if derivative.get("source", {}).get("source_id") != sid:
+                errors.append(f"{derivative_label}.source_identity_mismatch")
+            if derivative.get("source", {}).get("identity_digest") != manifest.get("source", {}).get("identity_digest"):
+                errors.append(f"{derivative_label}.source_identity_digest_mismatch")
+            if derivative.get("capability_id") != manifest.get("capability_id"):
+                errors.append(f"{derivative_label}.capability_identity_mismatch")
+            if derivative.get("dataset_id") != reference.get("dataset_id"):
+                errors.append(f"{derivative_label}.dataset_identity_mismatch")
         for field in ("status", "qualification", "admissibility"):
             if manifest.get(field) != member.get(field):
                 errors.append(f"{label}.{field}_state_mismatch")

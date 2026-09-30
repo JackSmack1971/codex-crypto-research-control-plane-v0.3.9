@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "policies": [
+    {
+      "policy_id": "provider-independent-observation-v1",
+      "policy_version": "1.0.0",
+      "policy_digest": "sha256:04d37ab5c8ccce99056b5c486006ed53c88432275d1865275de1ef3bb46999f4"
+    }
+  ],
+  "upgrade_rule": "append_new_identity_preserve_historical_entries"
+}
