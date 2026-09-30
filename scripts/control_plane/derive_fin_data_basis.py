@@ -49,6 +49,8 @@ def _bar_map(rows: list[list[Any]], expected_length: int, confirm_index: int) ->
             timestamp = int(row[0])
         except (ValueError, TypeError) as exc:
             raise ValueError("basis_input_timestamp_invalid") from exc
+        if timestamp % 60_000 != 0:
+            raise ValueError("basis_input_timestamp_not_minute_aligned")
         if timestamp in output:
             raise ValueError("basis_input_duplicate_bar")
         output[timestamp] = row
@@ -127,7 +129,7 @@ def derive(spot: dict[str, Any], perpetual: dict[str, Any], index: dict[str, Any
     age = int((received_at - bar_start_utc).total_seconds())
     if age < 0:
         raise ValueError("basis_bar_end_after_retrieval")
-    bar_end_utc = bar_start_utc.replace(second=0, microsecond=0) + timedelta(minutes=1)
+    bar_end_utc = bar_start_utc + timedelta(minutes=1)
     if bar_end_utc >= cutoff_time:
         raise ValueError("basis_bar_end_at_or_after_cutoff")
     if any(received >= cutoff_time for received in receive_times):

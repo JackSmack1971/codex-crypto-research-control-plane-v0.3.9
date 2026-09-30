@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts/control_plane"))
 from common import digest  # noqa: E402
-from derive_fin_data_basis import derive  # noqa: E402
+from derive_fin_data_basis import _bar_map, derive  # noqa: E402
 from validate_artifact import validate  # noqa: E402
 
 
@@ -70,6 +70,10 @@ class FinDataBasisDerivationTests(unittest.TestCase):
         ledger["content_digest"] = digest({key: value for key, value in ledger.items() if key != "content_digest"})
         with self.assertRaisesRegex(ValueError, "basis_retrieval_at_or_after_cutoff"):
             derive(spot, self.perpetual, self.index, ledger, "2026-09-30T03:32:00Z")
+
+    def test_non_minute_aligned_bar_timestamp_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "basis_input_timestamp_not_minute_aligned"):
+            _bar_map([["1790739030000", "1", "1", "1", "1", "1", "1", "1", "1"]], 9, 8)
 
 
 if __name__ == "__main__":
