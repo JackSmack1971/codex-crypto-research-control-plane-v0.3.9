@@ -15,6 +15,11 @@
       "uri": "https://www.okx.com/en-ae/help/okx-api-agreement?j2ke8=9",
       "description": "Published API Agreement reviewed; Sections 3.2(a), 9.2-9.4 address public market data and use restrictions. UAE-localized text; applicability to the fund entity/jurisdiction is unverified.",
       "observed_at": "2026-09-30T04:20:00Z"
+    },
+    {
+      "uri": "https://www.okx.com/en-us/help/okx-api-agreement",
+      "description": "Official US-English agreement page reviewed 2026-09-30. Sections 1.8, 3.2(a), and 9.2-9.4 cover target market-data types, public endpoints, use restrictions, and separate commercial/institutional data licensing; this does not establish the fund's contracting entity or applicable jurisdiction.",
+      "observed_at": "2026-09-30T04:40:54Z"
     }
   ],
   "required_evidence_to_authorize": [
