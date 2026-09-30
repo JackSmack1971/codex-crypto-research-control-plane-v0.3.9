@@ -122,6 +122,16 @@ def validate_source_manifest(obj: dict[str, Any], registry: dict[str, Any] | Non
             if key not in ds: errors.append(f"{label}.missing:{key}")
         if ds.get("evidence_role") not in {"RESEARCH_INPUT", "DIAGNOSTIC"}:
             errors.append(f"{label}.invalid_evidence_role")
+        if ds.get("evidence_role") == "RESEARCH_INPUT":
+            if ds.get("rights_result") != "PASS":
+                errors.append(f"{label}.research_input_rights_not_qualified")
+            if not ds.get("rights_snapshot_id"):
+                errors.append(f"{label}.research_input_rights_snapshot_missing")
+            rights_digest = ds.get("rights_snapshot_digest")
+            if (not isinstance(rights_digest, str) or len(rights_digest) != 71
+                    or not rights_digest.startswith("sha256:")
+                    or any(char not in "0123456789abcdef" for char in rights_digest[7:])):
+                errors.append(f"{label}.research_input_rights_digest_missing")
         if ds.get("evidence_role") == "RESEARCH_INPUT" and (ds.get("admissibility") != "ADMITTED" or ds.get("qualification") != "QUALIFIED"):
             errors.append(f"{label}.research_input_not_qualified_and_admitted")
         if ds.get("evidence_role") == "RESEARCH_INPUT" and (ds.get("pagination_complete") is not True or ds.get("status") != "COMPLETE"):
@@ -134,7 +144,10 @@ def validate_source_manifest(obj: dict[str, Any], registry: dict[str, Any] | Non
                     continue
                 if observed >= cutoff: errors.append(f"{label}.observation_at_or_after_cutoff")
                 max_age = ds.get("max_age_seconds")
-                if isinstance(max_age, int) and cutoff is not None and (cutoff-observed).total_seconds() > max_age:
+                # Stale observations remain durable diagnostic evidence. Only
+                # research inputs are rejected for exceeding their age bound.
+                if (ds.get("evidence_role") == "RESEARCH_INPUT" and isinstance(max_age, int)
+                        and cutoff is not None and (cutoff-observed).total_seconds() > max_age):
                     errors.append(f"{label}.stale_observation")
                 freshness = ds.get("freshness_seconds")
                 if isinstance(freshness, int) and cutoff is not None and freshness != int((cutoff-observed).total_seconds()):

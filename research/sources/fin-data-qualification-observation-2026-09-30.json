@@ -1,0 +1,15 @@
+{
+  "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+  "deployment_id": null,
+  "render_service_id": "srv-datvbivlk1mc73d3pfq0",
+  "render_service_name": "fin-data-mcp-http-v02-prod",
+  "render_service_state": "not_suspended",
+  "transport": "streamable_http",
+  "path": "/mcp",
+  "reachability": "UNKNOWN",
+  "initialization": "UNKNOWN",
+  "tools": [],
+  "representative_results": {},
+  "response_contracts": {},
+  "observation_note": "Render control-plane inventory confirmed service configuration; this session's Fin Data MCP tools are registered under a different deployment name and cannot be bound to this endpoint. No production MCP request was sent."
+}

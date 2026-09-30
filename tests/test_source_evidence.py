@@ -11,7 +11,7 @@ from validate_sources import validate, validate_qualification
 class SourceEvidenceTests(unittest.TestCase):
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory(); self.root=Path(self.tmp.name)
-        self.manifest={"schema_version":"1.0","manifest_id":"m-1","run_id":"2026-09-28-eod","attempt_id":"a-1","created_at":"2026-09-29T01:00:00Z","research_cutoff":"2026-09-29T00:00:00Z","source":{"source_id":"source-a","identity_digest":"sha256:"+"b"*64,"provider":"Fixture","runtime":"test","transport":"offline","adapter_id":"fixture","adapter_version":"1","capability_ids":["prices"]},"capability_id":"prices","discovery_status":"DISCOVERED","availability_status":"AVAILABLE","qualification":"QUALIFIED","admissibility":"ADMITTED","status":"COMPLETE","degradation_reason":None,"datasets":[{"dataset_id":"prices-1","data_digest":"sha256:"+"a"*64,"evidence_role":"RESEARCH_INPUT","status":"COMPLETE","pagination_complete":True,"row_count":1,"observed_at":"2026-09-28T23:59:00Z","freshness_seconds":60,"max_age_seconds":86400,"qualification":"QUALIFIED","admissibility":"ADMITTED"}]}
+        self.manifest={"schema_version":"1.0","manifest_id":"m-1","run_id":"2026-09-28-eod","attempt_id":"a-1","created_at":"2026-09-29T01:00:00Z","research_cutoff":"2026-09-29T00:00:00Z","source":{"source_id":"source-a","identity_digest":"sha256:"+"b"*64,"provider":"Fixture","runtime":"test","transport":"offline","adapter_id":"fixture","adapter_version":"1","capability_ids":["prices"]},"capability_id":"prices","discovery_status":"DISCOVERED","availability_status":"AVAILABLE","qualification":"QUALIFIED","admissibility":"ADMITTED","status":"COMPLETE","degradation_reason":None,"datasets":[{"dataset_id":"prices-1","data_digest":"sha256:"+"a"*64,"evidence_role":"RESEARCH_INPUT","status":"COMPLETE","pagination_complete":True,"row_count":1,"observed_at":"2026-09-28T23:59:00Z","freshness_seconds":60,"max_age_seconds":86400,"qualification":"QUALIFIED","admissibility":"ADMITTED","rights_result":"PASS","rights_snapshot_id":"rights-1","rights_snapshot_digest":"sha256:"+"c"*64}]}
         self.manifest["source"]["identity_digest"]=digest({k:v for k,v in self.manifest["source"].items() if k!="identity_digest"})
         self.registry={"schema_version":"1.0","sources":[{"source_id":self.manifest["source"]["source_id"],**{k:v for k,v in self.manifest["source"].items() if k!="identity_digest"},"identity_digest":self.manifest["source"]["identity_digest"]}]}
         self.manifest["manifest_id"]=expected_manifest_id(self.manifest)
@@ -24,6 +24,17 @@ class SourceEvidenceTests(unittest.TestCase):
         b["content_digest"]=digest(b); return b
     def test_valid_manifest_and_bundle(self):
         self.assertEqual([],validate_source_manifest(self.manifest,self.registry)); self.assertEqual([],validate_bundle(self.bundle(),self.root,self.registry))
+    def test_research_input_requires_a_passed_rights_snapshot(self):
+        for status in ("BLOCK", "UNKNOWN", None):
+            with self.subTest(status=status):
+                changed=json.loads(json.dumps(self.manifest))
+                dataset=changed["datasets"][0]
+                if status is None:
+                    dataset.pop("rights_result"); dataset.pop("rights_snapshot_id"); dataset.pop("rights_snapshot_digest")
+                else:
+                    dataset["rights_result"] = status
+                changed["content_digest"] = digest({k:v for k,v in changed.items() if k!="content_digest"})
+                self.assertTrue(any("rights" in item for item in validate_source_manifest(changed,self.registry)))
     def test_builder_sorts_members_and_binds_exact_manifest(self):
         output=build([self.root/"manifest.json"],self.manifest["run_id"],self.manifest["attempt_id"],self.manifest["research_cutoff"],self.root,self.registry)
         self.assertEqual([],validate_bundle(output,self.root,self.registry)); self.assertEqual(self.manifest["content_digest"],output["members"][0]["manifest_digest"])

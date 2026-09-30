@@ -1,0 +1,64 @@
+{
+  "arguments_digest": "sha256:93aab3c7a95d54565baaf8acbea0904a444016722112d4b80e387343afaa499f",
+  "capability_id": "fin.crypto.candles",
+  "content_type": "text/event-stream",
+  "deployment_id": "dep-datvbjflk1mc73d3pitg",
+  "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+  "http_status": 200,
+  "isError": false,
+  "pagination_complete": true,
+  "permit_id": "fdp-70a52c4de9434ab9a404c7b7ec56a3b0",
+  "protocol_method": "tools/call",
+  "raw_response_digest": "sha256:a99ada178a1a740c6f526e9ee16cb4d3bb5d6ba3cbe23a2c0f54eddb8bccc401",
+  "received_at": "2026-09-30T04:02:40.477Z",
+  "request_id": "fin-1fa1acfd146145b5bb2e259b8eddffca",
+  "requested_at": "2026-09-30T04:02:37.414Z",
+  "result": {
+    "content": [
+      {
+        "text": "[\n  [\n    \"1790740920000\",\n    \"83302.7\",\n    \"83350\",\n    \"83302.6\",\n    \"83344.4\",\n    \"3791.57\",\n    \"37.9157\",\n    \"3159083.60551\",\n    \"0\"\n  ],\n  [\n    \"1790740860000\",\n    \"83296.5\",\n    \"83302.7\",\n    \"83283.1\",\n    \"83302.6\",\n    \"830.35\",\n    \"8.3035\",\n    \"691654.75962\",\n    \"1\"\n  ],\n  [\n    \"1790740800000\",\n    \"83272.8\",\n    \"83300\",\n    \"83270\",\n    \"83296.5\",\n    \"765.41\",\n    \"7.6541\",\n    \"637447.77824\",\n    \"1\"\n  ]\n]",
+        "type": "text"
+      }
+    ],
+    "structuredContent": {
+      "data": [
+        [
+          "1790740920000",
+          "83302.7",
+          "83350",
+          "83302.6",
+          "83344.4",
+          "3791.57",
+          "37.9157",
+          "3159083.60551",
+          "0"
+        ],
+        [
+          "1790740860000",
+          "83296.5",
+          "83302.7",
+          "83283.1",
+          "83302.6",
+          "830.35",
+          "8.3035",
+          "691654.75962",
+          "1"
+        ],
+        [
+          "1790740800000",
+          "83272.8",
+          "83300",
+          "83270",
+          "83296.5",
+          "765.41",
+          "7.6541",
+          "637447.77824",
+          "1"
+        ]
+      ]
+    }
+  },
+  "schema_version": "1.0",
+  "source_id": "fin_data_mcp_render_prod",
+  "tool_name": "crypto_candles"
+}

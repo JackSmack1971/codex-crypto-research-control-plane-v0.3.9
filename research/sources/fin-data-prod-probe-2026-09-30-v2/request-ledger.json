@@ -1,0 +1,285 @@
+{
+  "attempt_id": "fin-data-prod-probe-2026-09-30-v2",
+  "calls": [
+    {
+      "arguments": {
+        "capabilities": {},
+        "clientInfo": {
+          "name": "fin-data-governed-source",
+          "version": "0.1.0"
+        },
+        "protocolVersion": "2024-11-05"
+      },
+      "arguments_digest": "sha256:b8893e25ad51147216d879ad93d670f09f575a43253e9511c04ace125cfe2e6e",
+      "capability_id": "fin.mcp.initialize",
+      "completed_at": "2026-09-30T03:14:42.784Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-cddb89c101744bf3969639f03391da7b",
+      "permitted_at": "2026-09-30T03:14:18.064Z",
+      "request_id": "fin-c395d94b4d4f46f1ba76b1806a20bd53",
+      "result_digest": "sha256:3b93cac5c069b26aef4fe7e26515b1d8c973e1dff790d3679272c43f2798a4b5",
+      "tool_name": "initialize"
+    },
+    {
+      "arguments": {},
+      "arguments_digest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "capability_id": "fin.mcp.initialized_notification",
+      "completed_at": "2026-09-30T03:14:43.522Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-2c5cc8b5bf7f4adcac4baff2a3afbdf3",
+      "permitted_at": "2026-09-30T03:14:43.110Z",
+      "request_id": "fin-b0ed4bfb87c14ebe9a0657d2efe95459",
+      "result_digest": "sha256:2cf5c958b11540166ad3c51b4b6ef858943a8fd33216faccacf9450268a696ff",
+      "tool_name": "notifications/initialized"
+    },
+    {
+      "arguments": {},
+      "arguments_digest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "capability_id": "fin.mcp.tools_list",
+      "completed_at": "2026-09-30T03:14:48.104Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-36c5f1a4ebc24132956f60b801746de4",
+      "permitted_at": "2026-09-30T03:14:43.875Z",
+      "request_id": "fin-4107db161e8143a18d162c2b2d3826ee",
+      "result_digest": "sha256:b64fb4f04ba639aec9989440cf0209c8a05d222e90a53cfdde7068ac0f6965cb",
+      "tool_name": "tools/list"
+    },
+    {
+      "arguments": {
+        "arguments": {
+          "instType": "SPOT"
+        },
+        "name": "crypto_list_instruments"
+      },
+      "arguments_digest": "sha256:2e12296b83392b5c4da1fb9b91f7290009ef2df5936eaf58a4fe06878ed4a2f0",
+      "capability_id": "fin.crypto.instrument_discovery",
+      "completed_at": "2026-09-30T03:14:52.305Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-a3ba7fd26dfc4513b9d2100318fa5b7d",
+      "permitted_at": "2026-09-30T03:14:48.454Z",
+      "request_id": "fin-b0f6264c32d641f585c8a980b1caf42f",
+      "result_digest": "sha256:b5b019e75f0db440ce6d7e98a27b66a0fde52dc254b05725e1cc87a9e9b8c9bc",
+      "tool_name": "crypto_list_instruments"
+    },
+    {
+      "arguments": {
+        "arguments": {
+          "instType": "SWAP"
+        },
+        "name": "crypto_list_instruments"
+      },
+      "arguments_digest": "sha256:071508ea002935f40bac7d80816460d2724563dd2fabec9e24581d20ec092df7",
+      "capability_id": "fin.crypto.instrument_discovery",
+      "completed_at": "2026-09-30T03:14:55.885Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-f014145503644980820adc79f3602987",
+      "permitted_at": "2026-09-30T03:14:52.668Z",
+      "request_id": "fin-b0b837d9e81140cfbd5fdd253cc85305",
+      "result_digest": "sha256:af0bcd14688ef7459039965982590e354bb3eaeca706b00dbeb074f31caf2811",
+      "tool_name": "crypto_list_instruments"
+    },
+    {
+      "arguments": {
+        "arguments": {
+          "history": false,
+          "instId": "BTC-USDT-SWAP"
+        },
+        "name": "crypto_funding_rate"
+      },
+      "arguments_digest": "sha256:8db0af46f77f5896f3ceba52e79ba56b0ba93fb9715392fecd826907076fb6f3",
+      "capability_id": "fin.crypto.funding",
+      "completed_at": "2026-09-30T03:14:59.543Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-c2932cef322d46c6b95db378f44c07d1",
+      "permitted_at": "2026-09-30T03:14:56.246Z",
+      "request_id": "fin-94daf401534749689c67222521e95e8c",
+      "result_digest": "sha256:abf23d6b4e236f28e65d8683c9e034b2722ef8a3cdb1d7b752b603421fc74b43",
+      "tool_name": "crypto_funding_rate"
+    },
+    {
+      "arguments": {
+        "arguments": {
+          "instId": "BTC-USDT-SWAP",
+          "instType": "SWAP"
+        },
+        "name": "crypto_open_interest"
+      },
+      "arguments_digest": "sha256:bd087306e8edd126031150c388f7a7852f034b29cdc9b8e37ea10e93ee7ebacc",
+      "capability_id": "fin.crypto.open_interest",
+      "completed_at": "2026-09-30T03:15:02.993Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-4f138365b86445b58d69637b068b465b",
+      "permitted_at": "2026-09-30T03:14:59.912Z",
+      "request_id": "fin-be117aa7c04a434589afc040c2042846",
+      "result_digest": "sha256:f429a82a075ebc5135b5a8211d19e17d77542576d3e9d0c724d0562b2f3e598a",
+      "tool_name": "crypto_open_interest"
+    },
+    {
+      "arguments": {
+        "arguments": {
+          "ccy": "BTC",
+          "period": "5m"
+        },
+        "name": "crypto_long_short_ratio"
+      },
+      "arguments_digest": "sha256:298a0c58bab8675f7a6a22948bddf8481957b5eab61832767c73e8f7be57e879",
+      "capability_id": "fin.crypto.long_short_ratio",
+      "completed_at": "2026-09-30T03:15:06.928Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-048cdefc8fc14597826e8b42d3b94454",
+      "permitted_at": "2026-09-30T03:15:03.340Z",
+      "request_id": "fin-f6e25042f63c4051825002637f576d23",
+      "result_digest": "sha256:27b6b50cf3e7ac7e1bb859ecfca2efa3fb5eaa8bc200136acf915ddea962f18e",
+      "tool_name": "crypto_long_short_ratio"
+    },
+    {
+      "arguments": {
+        "arguments": {
+          "instId": "BTC-USDT-SWAP",
+          "instType": "SWAP"
+        },
+        "name": "crypto_mark_price"
+      },
+      "arguments_digest": "sha256:2308586f8a0ec7357228d27b0e0a6cd75e53068a0520f1ef35cd66a57a7c17a1",
+      "capability_id": "fin.crypto.mark_price",
+      "completed_at": "2026-09-30T03:15:10.675Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-956ad14ff43d4b069c6ad469789d7c1f",
+      "permitted_at": "2026-09-30T03:15:07.404Z",
+      "request_id": "fin-2133045106e04e1c95bda27d8e2a03fe",
+      "result_digest": "sha256:9a055743f3b70d76de997e71a4a9e5b51ed83fc396b3d6a82feaf436e9c8bcf9",
+      "tool_name": "crypto_mark_price"
+    },
+    {
+      "arguments": {
+        "arguments": {
+          "instId": "BTC-USDT"
+        },
+        "name": "crypto_ticker"
+      },
+      "arguments_digest": "sha256:a4281b99574780f18fbf2d7972b6d18ef8a902b7cf1fcce5abbe198cce718301",
+      "capability_id": "fin.crypto.ticker",
+      "completed_at": "2026-09-30T03:15:14.413Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-06d128ea8a7140f1979a2ee4e45c2dfd",
+      "permitted_at": "2026-09-30T03:15:11.071Z",
+      "request_id": "fin-f021271254df47db89fd3e22ba60c58d",
+      "result_digest": "sha256:2a9465f442d3779603beca7fb5a31f6ad036c3b9c07766c6506fa37b76069924",
+      "tool_name": "crypto_ticker"
+    },
+    {
+      "arguments": {
+        "arguments": {
+          "instId": "BTC-USDT-SWAP"
+        },
+        "name": "crypto_ticker"
+      },
+      "arguments_digest": "sha256:e4a9df95a0fec30438c08b2e0d1cde369060cd11d3297ede8516327473b8568f",
+      "capability_id": "fin.crypto.ticker",
+      "completed_at": "2026-09-30T03:15:18.116Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-a9ef86e220c447b8af08a7711bf8c144",
+      "permitted_at": "2026-09-30T03:15:14.859Z",
+      "request_id": "fin-61201000be7c498496bee0e1cd662bec",
+      "result_digest": "sha256:af58574d88da9e5987fa1a0e08378124916cbe9bf676fc87d6fe451dc615d791",
+      "tool_name": "crypto_ticker"
+    },
+    {
+      "arguments": {
+        "arguments": {
+          "depth": 5,
+          "instId": "BTC-USDT-SWAP"
+        },
+        "name": "crypto_orderbook"
+      },
+      "arguments_digest": "sha256:0e8c53d52ea723373f4d90ebdf5ff053055fad51c5f0391d8a41b488d0520277",
+      "capability_id": "fin.crypto.orderbook",
+      "completed_at": "2026-09-30T03:15:21.955Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-c76963c2fd6d4144ada064f6d5066f1f",
+      "permitted_at": "2026-09-30T03:15:18.597Z",
+      "request_id": "fin-1a5fb76f53444cde9efbdaa49380901e",
+      "result_digest": "sha256:88f088fec7617a817ef11ccc041ce59c565c01ac66f3ce9dd0113035a403adbe",
+      "tool_name": "crypto_orderbook"
+    },
+    {
+      "arguments": {
+        "arguments": {
+          "instId": "BTC-USDT-SWAP",
+          "limit": 10
+        },
+        "name": "crypto_recent_trades"
+      },
+      "arguments_digest": "sha256:681fb6d5f9d4d0a4317ceb85d28e972a135e276bffcb44752dba8513574af595",
+      "capability_id": "fin.crypto.recent_trades",
+      "completed_at": "2026-09-30T03:15:25.613Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-c4118e376d6e41a8ba69c61d1bf0ecbb",
+      "permitted_at": "2026-09-30T03:15:22.376Z",
+      "request_id": "fin-2a7ac9e223a6447b937e9c4a5a595334",
+      "result_digest": "sha256:a3586579a9a807432dfd5c980ec0716f35e3547ad0224048d4cf35b803343fe0",
+      "tool_name": "crypto_recent_trades"
+    },
+    {
+      "arguments": {
+        "arguments": {
+          "bar": "1H",
+          "instId": "BTC-USDT-SWAP",
+          "limit": 1
+        },
+        "name": "crypto_candles"
+      },
+      "arguments_digest": "sha256:921a7ce3f568c22158c70d31de5264e4032e3098d3f0c606a971afcd5e672d2b",
+      "capability_id": "fin.crypto.candles",
+      "completed_at": "2026-09-30T03:15:29.506Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-476c191c153440889f5c870362a0d8e7",
+      "permitted_at": "2026-09-30T03:15:26.044Z",
+      "request_id": "fin-cbb4a53b9bd3478f86091235c543fd58",
+      "result_digest": "sha256:b283c859a9ed2cd6c8d74a425c1032d0b02edb190b1a5f010efedd57e0ed201d",
+      "tool_name": "crypto_candles"
+    },
+    {
+      "arguments": {
+        "arguments": {
+          "bar": "1H",
+          "instId": "BTC-USD",
+          "limit": 1
+        },
+        "name": "crypto_index_candles"
+      },
+      "arguments_digest": "sha256:98a89d0a7c1c80e95b59fb80a2ddbfa6aed0896df69a81c912204f917b83ecd6",
+      "capability_id": "fin.crypto.index_candles",
+      "completed_at": "2026-09-30T03:15:33.321Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-b2400369f40141948a8ed58430fc010b",
+      "permitted_at": "2026-09-30T03:15:29.926Z",
+      "request_id": "fin-e07c83870e8940638e4bb64306dc4a41",
+      "result_digest": "sha256:b3a81648da6f44a7d6193f2d6b47a5cc022aa9ee2645daa4b1f8d84e00d7ceea",
+      "tool_name": "crypto_index_candles"
+    }
+  ],
+  "content_digest": "sha256:7f0785e0350f25bb8f5a83aeba68c1aabb235050b97651e78199470dad2fe130",
+  "created_at": "2026-09-30T03:14:17.690Z",
+  "policy_digest": "sha256:7e0823a763cae1a885578792de4dc53ba0392e2019b23368d8b7476b2e12860a",
+  "schema_version": "1.0",
+  "sealed_at": "2026-09-30T03:15:33.602Z",
+  "source_id": "fin_data_mcp_render_prod",
+  "status": "SEALED",
+  "tainted": false
+}

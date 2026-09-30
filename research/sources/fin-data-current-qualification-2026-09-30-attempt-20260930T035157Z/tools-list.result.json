@@ -1,0 +1,2903 @@
+{
+  "arguments_digest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "capability_id": "fin.mcp.tools_list",
+  "content_type": "text/event-stream",
+  "deployment_id": "dep-datvbjflk1mc73d3pitg",
+  "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+  "http_status": 200,
+  "isError": false,
+  "pagination_complete": true,
+  "permit_id": "fdp-86ef8ad7812d44b190c9be54c593b417",
+  "protocol_method": "tools/list",
+  "raw_response_digest": "sha256:46b22cb1fdafebd9b8b7f45ce8076042e2d336bbdf0bd2e8c2294c1392145190",
+  "received_at": "2026-09-30T03:53:35.822Z",
+  "request_id": "fin-333bbf219dc241dca1bb930e7e99094e",
+  "requested_at": "2026-09-30T03:53:32.048Z",
+  "result": {
+    "tools": [
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "OHLCV price history + metadata for any Yahoo symbol. Works for equities (AAPL), indices (^GSPC, ^DJI, ^IXIC, ^VIX), ETFs (SPY), FX (EURUSD=X) and crypto (BTC-USD). Use this for both stock and index data.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "interval": {
+              "default": "1d",
+              "description": "Candle size",
+              "enum": [
+                "1m",
+                "2m",
+                "5m",
+                "15m",
+                "30m",
+                "60m",
+                "90m",
+                "1h",
+                "1d",
+                "5d",
+                "1wk",
+                "1mo",
+                "3mo"
+              ],
+              "type": "string"
+            },
+            "range": {
+              "default": "1mo",
+              "description": "Look-back window",
+              "enum": [
+                "1d",
+                "5d",
+                "1mo",
+                "3mo",
+                "6mo",
+                "1y",
+                "2y",
+                "5y",
+                "10y",
+                "ytd",
+                "max"
+              ],
+              "type": "string"
+            },
+            "symbol": {
+              "description": "Yahoo symbol, e.g. AAPL, ^GSPC, SPY, BTC-USD",
+              "type": "string"
+            }
+          },
+          "required": [
+            "symbol"
+          ],
+          "type": "object"
+        },
+        "name": "yahoo_chart",
+        "title": "Yahoo price history (stocks / indices / ETFs / FX / crypto)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Latest price snapshot for a symbol derived from the chart endpoint (regular market price, previous close, day range, exchange, currency). Avoids the crumb-gated quote endpoint.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "symbol": {
+              "description": "Yahoo symbol, e.g. AAPL",
+              "type": "string"
+            }
+          },
+          "required": [
+            "symbol"
+          ],
+          "type": "object"
+        },
+        "name": "yahoo_quote",
+        "title": "Yahoo latest quote"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Search Yahoo Finance for tickers/companies by name or symbol. Returns matching quotes and related news. Use to resolve a company name to a symbol.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "query": {
+              "description": "Company name or ticker fragment",
+              "type": "string"
+            },
+            "quotesCount": {
+              "default": 10,
+              "maximum": 20,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "type": "object"
+        },
+        "name": "yahoo_search",
+        "title": "Yahoo symbol search"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Rich per-symbol fundamentals via the crumb-gated quoteSummary endpoint. Pass a comma-separated `modules` list. Common modules: price, summaryDetail, financialData, defaultKeyStatistics, assetProfile, earnings, recommendationTrend, balanceSheetHistory, incomeStatementHistory, cashflowStatementHistory, calendarEvents, earningsHistory, institutionOwnership, majorHoldersBreakdown. Example: { symbol: \"AAPL\", modules: \"price,summaryDetail,financialData,defaultKeyStatistics,assetProfile,earnings,recommendationTrend\" }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "modules": {
+              "default": "price,summaryDetail,financialData,defaultKeyStatistics,assetProfile",
+              "description": "Comma-separated quoteSummary modules",
+              "type": "string"
+            },
+            "symbol": {
+              "description": "Yahoo symbol, e.g. AAPL",
+              "type": "string"
+            }
+          },
+          "required": [
+            "symbol"
+          ],
+          "type": "object"
+        },
+        "name": "yahoo_quote_summary",
+        "title": "Yahoo quote summary (fundamentals / profile / statistics)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Symbols Yahoo considers similar to the given one, each with a similarity score. Use for peer/comparable discovery. Does not require a crumb. Example: { symbol: \"AAPL\" }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "symbol": {
+              "description": "Yahoo symbol, e.g. AAPL",
+              "type": "string"
+            }
+          },
+          "required": [
+            "symbol"
+          ],
+          "type": "object"
+        },
+        "name": "yahoo_recommendations",
+        "title": "Yahoo similar / recommended symbols"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Compact close-price series for one or more symbols in a single call \u2014 handy for sparklines or side-by-side comparisons. Example: { symbols: \"AAPL,MSFT,SPY\", range: \"1mo\", interval: \"1d\" }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "interval": {
+              "default": "1d",
+              "description": "Candle size",
+              "enum": [
+                "1m",
+                "2m",
+                "5m",
+                "15m",
+                "30m",
+                "60m",
+                "90m",
+                "1h",
+                "1d",
+                "5d",
+                "1wk",
+                "1mo",
+                "3mo"
+              ],
+              "type": "string"
+            },
+            "range": {
+              "default": "1mo",
+              "description": "Look-back window",
+              "enum": [
+                "1d",
+                "5d",
+                "1mo",
+                "3mo",
+                "6mo",
+                "1y",
+                "2y",
+                "5y",
+                "10y",
+                "ytd",
+                "max"
+              ],
+              "type": "string"
+            },
+            "symbols": {
+              "description": "Comma-separated Yahoo symbols, e.g. AAPL,MSFT,SPY",
+              "type": "string"
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "type": "object"
+        },
+        "name": "yahoo_spark",
+        "title": "Yahoo multi-symbol mini price series"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Options chain for a symbol: available expirations plus calls/puts (strikes, bid/ask, IV, OI, volume). Pass a Unix epoch-seconds `expiration` for a specific date, or omit for the nearest expiry.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "expiration": {
+              "description": "Expiration as Unix epoch seconds (from the first call's result)",
+              "type": "integer"
+            },
+            "symbol": {
+              "description": "Underlying symbol, e.g. AAPL",
+              "type": "string"
+            }
+          },
+          "required": [
+            "symbol"
+          ],
+          "type": "object"
+        },
+        "name": "yahoo_options_chain",
+        "title": "Yahoo options chain"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Delayed (~15 min) quote snapshot for an equity, ETF, or index from Cboe \u2014 a no-key backend independent of Yahoo. Returns last/bid/ask, day open/high/low/close, previous close, volume, and security metadata.\n\nSymbols: tickers as-is (AAPL, SPY); indices with an underscore prefix (_SPX, _VIX, _DJI, _NDX).\nExample: { symbol: 'AAPL' } or { symbol: '_SPX' }.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "symbol": {
+              "description": "Ticker (AAPL, SPY) or underscore-prefixed index (_SPX, _VIX)",
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "symbol"
+          ],
+          "type": "object"
+        },
+        "name": "cboe_quote",
+        "title": "Cboe delayed quote (stocks / indices)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Daily OHLCV price history for an equity/ETF/index from Cboe (history can extend back ~20 years). No key required. Use as a Yahoo-independent source for charts/backtests.\n\nSymbols: tickers as-is; indices with an underscore prefix (_SPX).\nExample: { symbol: 'SPY' }.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "symbol": {
+              "description": "Ticker or underscore-prefixed index symbol",
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "symbol"
+          ],
+          "type": "object"
+        },
+        "name": "cboe_history",
+        "title": "Cboe daily price history"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Full options chain for an underlying from Cboe (no key, no crumb) \u2014 a robust alternative to yahoo_options_chain. Returns every listed option (all expirations/strikes) with bid/ask, last, volume, open interest, IV, and greeks, plus the underlying quote.\n\nNote: the response can be large; filter client-side by expiration/strike.\nExample: { symbol: 'AAPL' }.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "symbol": {
+              "description": "Underlying ticker, e.g. AAPL",
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "symbol"
+          ],
+          "type": "object"
+        },
+        "name": "cboe_options_chain",
+        "title": "Cboe options chain"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Latest foreign-exchange reference rates from the European Central Bank. Returns rates for `symbols` quoted against `base`.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "base": {
+              "default": "USD",
+              "description": "Base currency, e.g. USD",
+              "maxLength": 3,
+              "minLength": 3,
+              "type": "string"
+            },
+            "symbols": {
+              "description": "Comma-separated target currencies, e.g. 'EUR,GBP,JPY'. Omit for all.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "fx_latest_rates",
+        "title": "Latest FX rates (ECB / Frankfurter)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "FX reference rates for a specific past date (YYYY-MM-DD). Falls back to the most recent prior working day if the date is a weekend/holiday.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "base": {
+              "default": "USD",
+              "maxLength": 3,
+              "minLength": 3,
+              "type": "string"
+            },
+            "date": {
+              "description": "YYYY-MM-DD",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            },
+            "symbols": {
+              "description": "Comma-separated target currencies",
+              "type": "string"
+            }
+          },
+          "required": [
+            "date"
+          ],
+          "type": "object"
+        },
+        "name": "fx_historical_rate",
+        "title": "Historical FX rate on a date"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Daily FX rates across a date range. Use for currency charts and backtests.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "base": {
+              "default": "USD",
+              "maxLength": 3,
+              "minLength": 3,
+              "type": "string"
+            },
+            "end": {
+              "description": "End date YYYY-MM-DD. Omit for up-to-today.",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            },
+            "start": {
+              "description": "Start date YYYY-MM-DD",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            },
+            "symbols": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "start"
+          ],
+          "type": "object"
+        },
+        "name": "fx_timeseries",
+        "title": "FX rate time series"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Map of supported currency codes to full names.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {},
+          "type": "object"
+        },
+        "name": "fx_list_currencies",
+        "title": "List supported currencies"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "All exchange rates for a base currency from the ExchangeRate-API open endpoint (no key). Independent second source to cross-check Frankfurter.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "base": {
+              "default": "USD",
+              "description": "Base currency code",
+              "maxLength": 3,
+              "minLength": 3,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "fx_open_rates",
+        "title": "FX rates (ExchangeRate-API, open)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Time series for a World Bank indicator and country. Example indicators: NY.GDP.MKTP.CD (GDP, current US$), FP.CPI.TOTL.ZG (inflation %), SP.POP.TOTL (population). Country as ISO code (US, CN) or 'all'/'WLD' for world.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "country": {
+              "default": "US",
+              "description": "ISO country code, 'WLD', or 'all'",
+              "type": "string"
+            },
+            "date": {
+              "description": "Year or range, e.g. '2020' or '2000:2023'",
+              "type": "string"
+            },
+            "indicator": {
+              "description": "World Bank indicator code, e.g. NY.GDP.MKTP.CD",
+              "type": "string"
+            },
+            "perPage": {
+              "default": 100,
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "indicator"
+          ],
+          "type": "object"
+        },
+        "name": "worldbank_indicator",
+        "title": "World Bank indicator time series"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "List World Bank indicators (paginated). Use to discover indicator codes before calling worldbank_indicator. There is no full-text search; page through.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "page": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "perPage": {
+              "default": 50,
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "name": "worldbank_search_indicators",
+        "title": "Browse World Bank indicators"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Country metadata: ISO codes, region, income level, capital.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "perPage": {
+              "default": 300,
+              "maximum": 400,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "name": "worldbank_list_countries",
+        "title": "List World Bank countries & regions"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "List the data sources (databases) behind World Bank indicators, e.g. World Development Indicators, Doing Business. Use to discover a source id for filtering. Example: { perPage: 100 }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "perPage": {
+              "default": 100,
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "name": "worldbank_sources",
+        "title": "List World Bank data sources"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "List the thematic topics (e.g. Agriculture, Economy & Growth, Health) used to categorize World Bank indicators. Example: { perPage: 100 }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "perPage": {
+              "default": 100,
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "name": "worldbank_topics",
+        "title": "List World Bank topics"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Metadata for a single indicator: name, source, topics, and a definition/notes string. Use to confirm what an indicator code measures. Example: { code: \"NY.GDP.MKTP.CD\" }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "code": {
+              "description": "World Bank indicator code, e.g. NY.GDP.MKTP.CD",
+              "type": "string"
+            }
+          },
+          "required": [
+            "code"
+          ],
+          "type": "object"
+        },
+        "name": "worldbank_indicator_metadata",
+        "title": "World Bank indicator metadata"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Metadata for a single country/region: ISO codes, region, income level, lending type, capital, coordinates. Example: { code: \"US\" }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "code": {
+              "description": "ISO country/region code, e.g. US, CN, EUU",
+              "type": "string"
+            }
+          },
+          "required": [
+            "code"
+          ],
+          "type": "object"
+        },
+        "name": "worldbank_country",
+        "title": "World Bank country metadata"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "OHLCV candlesticks for a crypto instrument. Use spot ids like 'BTC-USDT' or perpetual-swap ids like 'BTC-USDT-SWAP'. Rows: [ts, open, high, low, close, vol, volCcy, volCcyQuote, confirm].",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "bar": {
+              "default": "1H",
+              "enum": [
+                "1m",
+                "3m",
+                "5m",
+                "15m",
+                "30m",
+                "1H",
+                "2H",
+                "4H",
+                "6H",
+                "12H",
+                "1D",
+                "1W",
+                "1M"
+              ],
+              "type": "string"
+            },
+            "instId": {
+              "description": "OKX instrument id, e.g. BTC-USDT or BTC-USDT-SWAP",
+              "type": "string"
+            },
+            "limit": {
+              "default": 100,
+              "maximum": 300,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "instId"
+          ],
+          "type": "object"
+        },
+        "name": "crypto_candles",
+        "title": "Crypto candlesticks (OKX, spot or perp)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Latest ticker for one instrument: last price, 24h high/low/volume, bid/ask. Works for spot and swap ids.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "instId": {
+              "description": "e.g. BTC-USDT or BTC-USDT-SWAP",
+              "type": "string"
+            }
+          },
+          "required": [
+            "instId"
+          ],
+          "type": "object"
+        },
+        "name": "crypto_ticker",
+        "title": "Crypto ticker (OKX)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Current bids/asks for an instrument.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "depth": {
+              "default": 20,
+              "description": "Levels per side",
+              "maximum": 400,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "instId": {
+              "description": "e.g. BTC-USDT-SWAP",
+              "type": "string"
+            }
+          },
+          "required": [
+            "instId"
+          ],
+          "type": "object"
+        },
+        "name": "crypto_orderbook",
+        "title": "Crypto order book (OKX)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Current funding rate + next funding time for a perpetual swap. Set `history: true` for recent historical funding rates.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "history": {
+              "default": false,
+              "type": "boolean"
+            },
+            "instId": {
+              "description": "Perpetual swap id, e.g. BTC-USDT-SWAP",
+              "type": "string"
+            },
+            "limit": {
+              "default": 20,
+              "description": "Only with history",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "instId"
+          ],
+          "type": "object"
+        },
+        "name": "crypto_funding_rate",
+        "title": "Crypto funding rate (OKX, perps)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Open interest for a swap/futures instrument (or all of an instType).",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "instId": {
+              "description": "e.g. BTC-USDT-SWAP. Omit for all of instType.",
+              "type": "string"
+            },
+            "instType": {
+              "default": "SWAP",
+              "enum": [
+                "SWAP",
+                "FUTURES",
+                "OPTION"
+              ],
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "crypto_open_interest",
+        "title": "Crypto open interest (OKX)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Mark price for a swap/futures instrument (or all of an instType).",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "instId": {
+              "description": "e.g. BTC-USDT-SWAP. Omit for all of instType.",
+              "type": "string"
+            },
+            "instType": {
+              "default": "SWAP",
+              "enum": [
+                "SWAP",
+                "FUTURES",
+                "OPTION"
+              ],
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "crypto_mark_price",
+        "title": "Crypto mark price (OKX)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Most recent public trades for an instrument: price, size, side, trade id, timestamp. Works for spot and swap ids. Example: { instId: \"BTC-USDT\", limit: 50 }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "instId": {
+              "description": "e.g. BTC-USDT or BTC-USDT-SWAP",
+              "type": "string"
+            },
+            "limit": {
+              "default": 100,
+              "maximum": 500,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "instId"
+          ],
+          "type": "object"
+        },
+        "name": "crypto_recent_trades",
+        "title": "Crypto recent trades (OKX)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Latest tickers for every instrument of an instType in one call \u2014 last price, 24h high/low/volume, bid/ask. Use for market-wide scans. Example: { instType: \"SPOT\" }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "instType": {
+              "default": "SPOT",
+              "enum": [
+                "SPOT",
+                "SWAP",
+                "FUTURES"
+              ],
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "crypto_all_tickers",
+        "title": "All crypto tickers for an instType (OKX)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "OHLC candlesticks for an OKX index (not a tradable instrument). Use index ids of the form 'BTC-USD' or 'ETH-USD'. Rows: [ts, open, high, low, close, confirm]. Example: { instId: \"BTC-USD\", bar: \"1H\", limit: 100 }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "bar": {
+              "default": "1H",
+              "enum": [
+                "1m",
+                "3m",
+                "5m",
+                "15m",
+                "30m",
+                "1H",
+                "2H",
+                "4H",
+                "6H",
+                "12H",
+                "1D",
+                "1W",
+                "1M"
+              ],
+              "type": "string"
+            },
+            "instId": {
+              "description": "Index id, e.g. BTC-USD or ETH-USD",
+              "type": "string"
+            },
+            "limit": {
+              "default": 100,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "instId"
+          ],
+          "type": "object"
+        },
+        "name": "crypto_index_candles",
+        "title": "Crypto index candlesticks (OKX)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Highest buy and lowest sell limit prices currently allowed for a swap/futures instrument. Example: { instId: \"BTC-USDT-SWAP\" }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "instId": {
+              "description": "Derivative id, e.g. BTC-USDT-SWAP",
+              "type": "string"
+            }
+          },
+          "required": [
+            "instId"
+          ],
+          "type": "object"
+        },
+        "name": "crypto_price_limit",
+        "title": "Crypto price limit (OKX, derivatives)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Time series of the long/short account ratio for a currency's contracts (market sentiment). Rows: [ts, longShortRatio]. Example: { ccy: \"BTC\", period: \"5m\" }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "ccy": {
+              "description": "Underlying currency, e.g. BTC, ETH",
+              "type": "string"
+            },
+            "period": {
+              "default": "5m",
+              "description": "Sampling period",
+              "enum": [
+                "5m",
+                "1H",
+                "1D"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "ccy"
+          ],
+          "type": "object"
+        },
+        "name": "crypto_long_short_ratio",
+        "title": "Crypto long/short account ratio (OKX rubik)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "List tradable instruments for an instType (SPOT, SWAP, FUTURES, OPTION). Use to discover valid instId values.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "instType": {
+              "default": "SWAP",
+              "enum": [
+                "SPOT",
+                "SWAP",
+                "FUTURES",
+                "OPTION"
+              ],
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "crypto_list_instruments",
+        "title": "List crypto instruments (OKX)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "List markets with metadata (question, outcomes, prices, volume, liquidity, clobTokenIds). Filter by active/closed. Use clobTokenIds with the price history / order book tools below.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "active": {
+              "type": "boolean"
+            },
+            "ascending": {
+              "type": "boolean"
+            },
+            "closed": {
+              "type": "boolean"
+            },
+            "limit": {
+              "default": 50,
+              "maximum": 500,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "offset": {
+              "default": 0,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "order": {
+              "description": "Field to order by, e.g. 'volume'",
+              "type": "string"
+            },
+            "slug": {
+              "description": "Filter by market slug",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "polymarket_list_markets",
+        "title": "List Polymarket markets (Gamma)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "List events (groups of related markets), e.g. an election with many candidate markets. Filter by active/closed/tag/slug.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "active": {
+              "type": "boolean"
+            },
+            "closed": {
+              "type": "boolean"
+            },
+            "limit": {
+              "default": 50,
+              "maximum": 500,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "offset": {
+              "default": 0,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "order": {
+              "type": "string"
+            },
+            "slug": {
+              "type": "string"
+            },
+            "tag": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "polymarket_list_events",
+        "title": "List Polymarket events (Gamma)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Full detail for a single market. Pass `id` (numeric Gamma id) to fetch by id, or `slug` to look it up by URL slug. Returns question, outcomes, conditionId, clobTokenIds, prices, volume and liquidity. Example: { id: \"540817\" }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "description": "Numeric Gamma market id",
+              "type": "string"
+            },
+            "slug": {
+              "description": "Market URL slug",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "polymarket_get_market",
+        "title": "Get a Polymarket market (Gamma)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Full detail for a single event (a group of related markets). Pass `id` (numeric Gamma id) to fetch by id, or `slug` to look it up by URL slug. Includes nested markets. Example: { slug: \"kraken-ipo-in-2025\" }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "description": "Numeric Gamma event id",
+              "type": "string"
+            },
+            "slug": {
+              "description": "Event URL slug",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "polymarket_get_event",
+        "title": "Get a Polymarket event (Gamma)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Time series of an outcome's price. `market` is a CLOB token id (from a market's clobTokenIds). Use `interval` (1m/1h/6h/1d/1w/max) OR explicit startTs/endTs. `fidelity` is resolution in minutes.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "endTs": {
+              "description": "Unix epoch seconds",
+              "type": "integer"
+            },
+            "fidelity": {
+              "description": "Resolution in minutes",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "interval": {
+              "enum": [
+                "1m",
+                "1h",
+                "6h",
+                "1d",
+                "1w",
+                "max"
+              ],
+              "type": "string"
+            },
+            "market": {
+              "description": "CLOB token id (NOT the condition id)",
+              "type": "string"
+            },
+            "startTs": {
+              "description": "Unix epoch seconds",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "market"
+          ],
+          "type": "object"
+        },
+        "name": "polymarket_price_history",
+        "title": "Polymarket price history (CLOB)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Live order book (bids/asks) for an outcome token. `token_id` is a CLOB token id from a market's clobTokenIds.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "token_id": {
+              "description": "CLOB token id",
+              "type": "string"
+            }
+          },
+          "required": [
+            "token_id"
+          ],
+          "type": "object"
+        },
+        "name": "polymarket_order_book",
+        "title": "Polymarket order book (CLOB)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Current midpoint (mid of best bid/ask) for an outcome token. `token_id` is a CLOB token id from a market's clobTokenIds. Example: { token_id: \"98022490269692409998126496127597032490334070080325855126491859374983463996227\" }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "token_id": {
+              "description": "CLOB token id",
+              "type": "string"
+            }
+          },
+          "required": [
+            "token_id"
+          ],
+          "type": "object"
+        },
+        "name": "polymarket_midpoint",
+        "title": "Polymarket midpoint price (CLOB)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Most recent trade price and side for an outcome token. `token_id` is a CLOB token id from a market's clobTokenIds. Example: { token_id: \"98022490269692409998126496127597032490334070080325855126491859374983463996227\" }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "token_id": {
+              "description": "CLOB token id",
+              "type": "string"
+            }
+          },
+          "required": [
+            "token_id"
+          ],
+          "type": "object"
+        },
+        "name": "polymarket_last_trade_price",
+        "title": "Polymarket last trade price (CLOB)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Current bid-ask spread for an outcome token. `token_id` is a CLOB token id from a market's clobTokenIds. Example: { token_id: \"98022490269692409998126496127597032490334070080325855126491859374983463996227\" }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "token_id": {
+              "description": "CLOB token id",
+              "type": "string"
+            }
+          },
+          "required": [
+            "token_id"
+          ],
+          "type": "object"
+        },
+        "name": "polymarket_spread",
+        "title": "Polymarket bid-ask spread (CLOB)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "List regulated event markets (politics, macro, financials). Filterable by status and parent event/series. Returns yes/no prices, volume, expirations.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "cursor": {
+              "description": "Pagination cursor",
+              "type": "string"
+            },
+            "event_ticker": {
+              "description": "Filter to one event",
+              "type": "string"
+            },
+            "limit": {
+              "default": 50,
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "series_ticker": {
+              "description": "Filter to one series",
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "unopened",
+                "open",
+                "closed",
+                "settled"
+              ],
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "kalshi_list_markets",
+        "title": "List Kalshi markets"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Full detail for a single market by ticker.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "ticker": {
+              "description": "Market ticker",
+              "type": "string"
+            }
+          },
+          "required": [
+            "ticker"
+          ],
+          "type": "object"
+        },
+        "name": "kalshi_get_market",
+        "title": "Get a Kalshi market"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Current yes/no order book for a market ticker.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "depth": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "ticker": {
+              "description": "Market ticker",
+              "type": "string"
+            }
+          },
+          "required": [
+            "ticker"
+          ],
+          "type": "object"
+        },
+        "name": "kalshi_orderbook",
+        "title": "Kalshi market order book"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "List events (groups of related markets). Optionally include nested markets.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "cursor": {
+              "type": "string"
+            },
+            "limit": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "status": {
+              "enum": [
+                "unopened",
+                "open",
+                "closed",
+                "settled"
+              ],
+              "type": "string"
+            },
+            "with_nested_markets": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "name": "kalshi_list_events",
+        "title": "List Kalshi events"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Full detail for a single event by event ticker. Set `with_nested_markets` to include the event's child markets inline. Example: { event_ticker: \"KXELONMARS-99\", with_nested_markets: true }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "event_ticker": {
+              "description": "Event ticker",
+              "type": "string"
+            },
+            "with_nested_markets": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "event_ticker"
+          ],
+          "type": "object"
+        },
+        "name": "kalshi_get_event",
+        "title": "Get a Kalshi event"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Full detail for a single market series by series ticker (rules, category, frequency, contract terms). Example: { series_ticker: \"KXELONMARS\" }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "series_ticker": {
+              "description": "Series ticker",
+              "type": "string"
+            }
+          },
+          "required": [
+            "series_ticker"
+          ],
+          "type": "object"
+        },
+        "name": "kalshi_get_series",
+        "title": "Get a Kalshi series"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Public trade history (executed prints) across the exchange or for one market. Filter by `ticker`; page with `cursor`. Example: { ticker: \"KXELONMARS-99-Y\", limit: 50 }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "cursor": {
+              "description": "Pagination cursor",
+              "type": "string"
+            },
+            "limit": {
+              "default": 50,
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "ticker": {
+              "description": "Filter to one market ticker",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "kalshi_trades",
+        "title": "Kalshi public trade history"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Current exchange and trading availability flags. Example: {}",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {},
+          "type": "object"
+        },
+        "name": "kalshi_exchange_status",
+        "title": "Kalshi exchange status"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Standard trading hours and any maintenance windows for the exchange. Example: {}",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {},
+          "type": "object"
+        },
+        "name": "kalshi_exchange_schedule",
+        "title": "Kalshi exchange schedule"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "List market series, optionally filtered by category (e.g. Economics).",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "category": {
+              "description": "e.g. Economics, Politics, Financials",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "kalshi_list_series",
+        "title": "List Kalshi series"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Historical price candlesticks for a market within a series. Provide Unix epoch-seconds start/end and a period interval in minutes (1, 60, or 1440).",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "end_ts": {
+              "description": "End, Unix epoch seconds",
+              "type": "integer"
+            },
+            "period_interval": {
+              "default": 60,
+              "description": "Candle size in minutes",
+              "enum": [
+                1,
+                60,
+                1440
+              ],
+              "type": "number"
+            },
+            "series_ticker": {
+              "description": "Parent series ticker",
+              "type": "string"
+            },
+            "start_ts": {
+              "description": "Start, Unix epoch seconds",
+              "type": "integer"
+            },
+            "ticker": {
+              "description": "Market ticker",
+              "type": "string"
+            }
+          },
+          "required": [
+            "series_ticker",
+            "ticker",
+            "start_ts",
+            "end_ts"
+          ],
+          "type": "object"
+        },
+        "name": "kalshi_candlesticks",
+        "title": "Kalshi market candlesticks"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Full-text search Manifold markets by term. Returns probability forecasts for crowd-sourced predictions across politics, economics, tech, etc.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "limit": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "sort": {
+              "enum": [
+                "score",
+                "newest",
+                "liquidity",
+                "close-date",
+                "most-popular"
+              ],
+              "type": "string"
+            },
+            "term": {
+              "description": "Search query",
+              "type": "string"
+            }
+          },
+          "required": [
+            "term"
+          ],
+          "type": "object"
+        },
+        "name": "manifold_search_markets",
+        "title": "Search Manifold prediction markets"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Full detail for a single market including current probability, pool, and resolution status. Provide either the market id or its URL slug.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "description": "Market id",
+              "type": "string"
+            },
+            "slug": {
+              "description": "URL slug (the part after /<user>/)",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "manifold_get_market",
+        "title": "Get a Manifold market by id or slug"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "List markets in reverse-chronological order (newest first).",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "limit": {
+              "default": 50,
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "name": "manifold_list_markets",
+        "title": "List recent Manifold markets"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Public profile for a Manifold user: balance, profit, market/trade counts, bio and creation date. Identify by username or by user id. Example: { username: 'DZC' }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "description": "User id (use instead of username)",
+              "type": "string"
+            },
+            "username": {
+              "description": "Handle, e.g. DZC (the @username)",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "manifold_get_user",
+        "title": "Get a Manifold user"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Per-user positions (holdings, shares, profit) for a single market. Reveals who is on each side and how concentrated the order book is. Example: { id: 'ZtAEnyhO29' }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "description": "Market (contract) id",
+              "type": "string"
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "type": "object"
+        },
+        "name": "manifold_market_positions",
+        "title": "Get Manifold market positions"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Recent bets (trades), newest first. Filter by a single market via `contractId`, by a trader via `username`, or both. Example: { contractId: 'ZtAEnyhO29', limit: 50 }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "contractId": {
+              "description": "Market (contract) id to filter by",
+              "type": "string"
+            },
+            "limit": {
+              "default": 100,
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "username": {
+              "description": "Trader handle to filter by",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "manifold_bets",
+        "title": "List Manifold bets"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "List Manifold groups (topics/categories) markets are organized under, with member and market counts. Example: { limit: 50 }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "beforeTime": {
+              "description": "Unix ms; return groups created before this time (pagination)",
+              "type": "integer"
+            },
+            "limit": {
+              "description": "Max groups to return",
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "name": "manifold_groups",
+        "title": "List Manifold groups"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Comments on a single market \u2014 useful for crowd reasoning and sentiment behind a forecast. Example: { contractId: 'ZtAEnyhO29' }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "contractId": {
+              "description": "Market (contract) id",
+              "type": "string"
+            }
+          },
+          "required": [
+            "contractId"
+          ],
+          "type": "object"
+        },
+        "name": "manifold_comments",
+        "title": "List Manifold market comments"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Recent filings metadata for a company (10-K, 10-Q, 8-K, Form 4 insider, etc.) including accession numbers, form types and dates. Identify by ticker or CIK.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "cik": {
+              "description": "CIK number (with or without leading zeros)",
+              "type": "string"
+            },
+            "ticker": {
+              "description": "Ticker symbol, e.g. AAPL",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "sec_company_filings",
+        "title": "SEC EDGAR company filings"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "All standardized XBRL financial facts for a company (revenue, assets, EPS, etc.) across all filings. Large payload. Identify by ticker or CIK.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "cik": {
+              "type": "string"
+            },
+            "ticker": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "sec_company_facts",
+        "title": "SEC EDGAR XBRL company facts"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Time series for one XBRL concept for a company, e.g. taxonomy 'us-gaap' + tag 'Revenues' or 'NetIncomeLoss'. Lighter than company_facts.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "cik": {
+              "type": "string"
+            },
+            "tag": {
+              "description": "XBRL tag, e.g. Revenues, Assets, NetIncomeLoss",
+              "type": "string"
+            },
+            "taxonomy": {
+              "default": "us-gaap",
+              "description": "e.g. us-gaap, dei",
+              "type": "string"
+            },
+            "ticker": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "tag"
+          ],
+          "type": "object"
+        },
+        "name": "sec_company_concept",
+        "title": "SEC EDGAR single XBRL concept"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Search the full text of EDGAR filings (last ~10 years). Filter by form type and date. Great for corporate-action and disclosure monitoring.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "endDate": {
+              "description": "YYYY-MM-DD",
+              "type": "string"
+            },
+            "forms": {
+              "description": "Form filter, e.g. '8-K' or '10-K,10-Q'",
+              "type": "string"
+            },
+            "query": {
+              "description": "Search phrase; wrap in quotes for exact match",
+              "type": "string"
+            },
+            "startDate": {
+              "description": "YYYY-MM-DD",
+              "type": "string"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "type": "object"
+        },
+        "name": "sec_full_text_search",
+        "title": "SEC EDGAR full-text filing search"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Look up the SEC Central Index Key (CIK) for a ticker symbol.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "ticker": {
+              "description": "Ticker symbol, e.g. MSFT",
+              "type": "string"
+            }
+          },
+          "required": [
+            "ticker"
+          ],
+          "type": "object"
+        },
+        "name": "sec_ticker_to_cik",
+        "title": "Resolve ticker \u2192 CIK"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Aggregates one XBRL fact, for one period, across ALL reporting companies \u2014 the cross-sectional complement to company_concept. Period is a calendar frame: annual durations 'CYyyyy' (e.g. CY2023), quarterly durations 'CYyyyyQn' (e.g. CY2023Q1), or instantaneous 'CYyyyyQnI' (e.g. CY2023Q1I, balance-sheet items). Example: { taxonomy: 'us-gaap', tag: 'AccountsPayableCurrent', unit: 'USD', period: 'CY2023Q1I' }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "period": {
+              "description": "Calendar frame: CY2023 (annual), CY2023Q1 (quarterly), CY2023Q1I (instantaneous)",
+              "type": "string"
+            },
+            "tag": {
+              "description": "XBRL tag, e.g. AccountsPayableCurrent, Revenues, Assets",
+              "type": "string"
+            },
+            "taxonomy": {
+              "default": "us-gaap",
+              "description": "e.g. us-gaap, dei, ifrs-full",
+              "type": "string"
+            },
+            "unit": {
+              "default": "USD",
+              "description": "Unit of measure, e.g. USD, shares, USD-per-shares",
+              "type": "string"
+            }
+          },
+          "required": [
+            "tag",
+            "period"
+          ],
+          "type": "object"
+        },
+        "name": "sec_xbrl_frames",
+        "title": "SEC EDGAR XBRL frames (one fact across all companies)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Query OECD data via SDMX. `dataflow` is 'AGENCY,DATAFLOW_ID,VERSION' (e.g. 'OECD.SDD.TPS,DSD_PRICES@DF_PRICES_ALL,1.0'). `key` is dot-delimited dimension values; leave a position empty for a wildcard (e.g. 'USA.M.N.CPI.IX._T.N.GY'). Returns SDMX-JSON. For big series, bound with startPeriod+endPeriod or cap with lastNObservations to keep responses small.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "dataflow": {
+              "description": "AGENCY,DATAFLOW_ID,VERSION",
+              "type": "string"
+            },
+            "endPeriod": {
+              "description": "e.g. 2024 or 2024-12",
+              "type": "string"
+            },
+            "firstNObservations": {
+              "minimum": 1,
+              "type": "integer"
+            },
+            "key": {
+              "default": "all",
+              "description": "Dot-delimited dimension key, or 'all'",
+              "type": "string"
+            },
+            "lastNObservations": {
+              "description": "Return only the most recent N observations per series (caps size)",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "startPeriod": {
+              "description": "e.g. 2020 or 2020-01",
+              "type": "string"
+            }
+          },
+          "required": [
+            "dataflow"
+          ],
+          "type": "object"
+        },
+        "name": "oecd_data",
+        "title": "OECD SDMX data query"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "List available OECD dataflows (datasets) as SDMX structure JSON. Use to discover the dataflow id + agency needed for oecd_data.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "agency": {
+              "default": "all",
+              "description": "Agency id filter, or 'all'",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "oecd_dataflows",
+        "title": "List OECD dataflows"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Discover a dataflow's full structure \u2014 its dimensions, the order they appear in the `key`, and the allowed codes for each \u2014 by pulling the dataflow plus all referenced structures (DSD, codelists, concepts) as SDMX-JSON. Use this before oecd_data to build a valid dot-delimited key. `dataflowId` may include or omit the trailing version (e.g. 'DSD_PRICES@DF_PRICES_ALL' or '.../1.0'). Example: { agency: \"OECD.SDD.TPS\", dataflowId: \"DSD_PRICES@DF_PRICES_ALL\" }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "agency": {
+              "description": "Agency id, e.g. OECD.SDD.TPS",
+              "type": "string"
+            },
+            "dataflowId": {
+              "description": "Dataflow id, optionally with version, e.g. DSD_PRICES@DF_PRICES_ALL",
+              "type": "string"
+            }
+          },
+          "required": [
+            "agency",
+            "dataflowId"
+          ],
+          "type": "object"
+        },
+        "name": "oecd_data_structure",
+        "title": "OECD dataflow structure (dimensions & codes)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Full-text search across all DBnomics providers/datasets. Use to discover the provider_code / dataset_code needed for dbnomics_series.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "limit": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "query": {
+              "description": "Search terms, e.g. 'unemployment rate germany'",
+              "type": "string"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "type": "object"
+        },
+        "name": "dbnomics_search",
+        "title": "Search DBnomics datasets"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Fetch one or more series with their observations. Identify a series by provider/dataset/series codes (e.g. provider=IMF, dataset=WEO:latest, series='USA.NGDPD.us_dollars'). Returns periods + values.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "dataset": {
+              "description": "Dataset code",
+              "type": "string"
+            },
+            "provider": {
+              "description": "Provider code, e.g. IMF, Eurostat, ECB",
+              "type": "string"
+            },
+            "series": {
+              "description": "Series code, or a mask with '+' / '.' wildcards for multiple",
+              "type": "string"
+            }
+          },
+          "required": [
+            "provider",
+            "dataset",
+            "series"
+          ],
+          "type": "object"
+        },
+        "name": "dbnomics_series",
+        "title": "Get a DBnomics series (with observations)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "List all source providers aggregated by DBnomics.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {},
+          "type": "object"
+        },
+        "name": "dbnomics_providers",
+        "title": "List DBnomics providers"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "List the datasets published by one provider, with their codes and names. Use to discover a dataset_code (paired with the provider) for dbnomics_dataset or dbnomics_series. Example: { provider: \"IMF\" }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "provider": {
+              "description": "Provider code, e.g. IMF, Eurostat, ECB, BIS",
+              "type": "string"
+            }
+          },
+          "required": [
+            "provider"
+          ],
+          "type": "object"
+        },
+        "name": "dbnomics_provider_datasets",
+        "title": "List a DBnomics provider's datasets"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Fetch metadata for one dataset: its name, dimensions, and the codes/labels for each dimension. Use to learn how to build a series mask for dbnomics_series. Example: { provider: \"IMF\", dataset: \"AFRREO\" }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "dataset": {
+              "description": "Dataset code, e.g. AFRREO",
+              "type": "string"
+            },
+            "provider": {
+              "description": "Provider code, e.g. IMF, Eurostat, ECB",
+              "type": "string"
+            }
+          },
+          "required": [
+            "provider",
+            "dataset"
+          ],
+          "type": "object"
+        },
+        "name": "dbnomics_dataset",
+        "title": "Get DBnomics dataset metadata"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Crypto market sentiment index (0 = extreme fear, 100 = extreme greed). Returns the latest value plus history for the requested number of days.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "limit": {
+              "default": 30,
+              "description": "Number of days of history (1 = today only)",
+              "maximum": 2000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "name": "crypto_fear_greed_index",
+        "title": "Crypto Fear & Greed Index"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "US House of Representatives stock transactions (Stock Watcher). Filter by ticker, representative name, and/or transaction-date range; returns the most recent matches. Example: { ticker: 'NVDA', startDate: '2024-01-01' }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "endDate": {
+              "description": "Latest transaction date, inclusive (YYYY-MM-DD)",
+              "type": "string"
+            },
+            "limit": {
+              "default": 50,
+              "maximum": 500,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "person": {
+              "description": "Representative name (substring match)",
+              "type": "string"
+            },
+            "startDate": {
+              "description": "Earliest transaction date, inclusive (YYYY-MM-DD)",
+              "type": "string"
+            },
+            "ticker": {
+              "description": "Stock ticker, e.g. NVDA",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "congress_house_trades",
+        "title": "US House stock trades"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "US Senate stock transactions (Stock Watcher). Filter by ticker, senator name, and/or transaction-date range; returns the most recent matches. Example: { person: 'Tuberville', startDate: '2023-01-01', endDate: '2023-12-31' }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "endDate": {
+              "description": "Latest transaction date, inclusive (YYYY-MM-DD)",
+              "type": "string"
+            },
+            "limit": {
+              "default": 50,
+              "maximum": 500,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "person": {
+              "description": "Senator name (substring match)",
+              "type": "string"
+            },
+            "startDate": {
+              "description": "Earliest transaction date, inclusive (YYYY-MM-DD)",
+              "type": "string"
+            },
+            "ticker": {
+              "description": "Stock ticker, e.g. NVDA",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "congress_senate_trades",
+        "title": "US Senate stock trades"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Live state vectors (position, altitude, velocity, callsign) for aircraft. Optionally bound to a lat/lon box. Useful for tracking corporate-jet and supply-chain air activity.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "icao24": {
+              "description": "Filter by aircraft ICAO24 hex id",
+              "type": "string"
+            },
+            "lamax": {
+              "description": "Max latitude",
+              "maximum": 90,
+              "minimum": -90,
+              "type": "number"
+            },
+            "lamin": {
+              "description": "Min latitude",
+              "maximum": 90,
+              "minimum": -90,
+              "type": "number"
+            },
+            "lomax": {
+              "description": "Max longitude",
+              "maximum": 180,
+              "minimum": -180,
+              "type": "number"
+            },
+            "lomin": {
+              "description": "Min longitude",
+              "maximum": 180,
+              "minimum": -180,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "name": "flights_live_states",
+        "title": "Live aircraft states (OpenSky)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Flights flown by a specific aircraft (ICAO24) within a time window. Time window must be <= 30 days. Unix epoch seconds.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "begin": {
+              "description": "Start time, Unix epoch seconds",
+              "type": "integer"
+            },
+            "end": {
+              "description": "End time, Unix epoch seconds",
+              "type": "integer"
+            },
+            "icao24": {
+              "description": "Aircraft ICAO24 hex id, lowercase",
+              "type": "string"
+            }
+          },
+          "required": [
+            "icao24",
+            "begin",
+            "end"
+          ],
+          "type": "object"
+        },
+        "name": "flights_by_aircraft",
+        "title": "Flights by aircraft (OpenSky)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Flights arriving at or departing from an airport (ICAO code) within a time window (<= 7 days). Unix epoch seconds.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "airport": {
+              "description": "Airport ICAO code, e.g. KJFK, EGLL",
+              "type": "string"
+            },
+            "begin": {
+              "description": "Start time, Unix epoch seconds",
+              "type": "integer"
+            },
+            "direction": {
+              "default": "departure",
+              "enum": [
+                "arrival",
+                "departure"
+              ],
+              "type": "string"
+            },
+            "end": {
+              "description": "End time, Unix epoch seconds",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "airport",
+            "begin",
+            "end"
+          ],
+          "type": "object"
+        },
+        "name": "flights_by_airport",
+        "title": "Arrivals/departures by airport (OpenSky)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true
+        },
+        "description": "Trajectory (waypoints: time, lat, lon, baro altitude, heading, on-ground) for a single aircraft. Use time=0 for the live/most-recent track, or a Unix epoch-seconds value within a flight to fetch that historical track (OpenSky only retains historical tracks for a limited window). Verified to work anonymously, but may require OpenSky credentials under heavy load. Example: { icao24: '39de4f', time: 0 }",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "icao24": {
+              "description": "Aircraft ICAO24 hex id, lowercase",
+              "type": "string"
+            },
+            "time": {
+              "default": 0,
+              "description": "Unix epoch seconds within the flight, or 0 for the live track",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "icao24"
+          ],
+          "type": "object"
+        },
+        "name": "flights_track",
+        "title": "Flight track / waypoints (OpenSky)"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true
+        },
+        "description": "Machine-readable inventory of providers, categories, credential requirements, enabled state, and tool names.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {},
+          "type": "object"
+        },
+        "name": "fin_data_catalog",
+        "title": "Fin Data provider catalog"
+      }
+    ]
+  },
+  "schema_version": "1.0",
+  "source_id": "fin_data_mcp_render_prod",
+  "tool_name": "tools/list"
+}

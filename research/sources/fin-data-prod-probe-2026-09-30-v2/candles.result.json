@@ -1,0 +1,42 @@
+{
+  "arguments_digest": "sha256:921a7ce3f568c22158c70d31de5264e4032e3098d3f0c606a971afcd5e672d2b",
+  "capability_id": "fin.crypto.candles",
+  "content_type": "text/event-stream",
+  "deployment_id": "dep-datvbjflk1mc73d3pitg",
+  "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+  "http_status": 200,
+  "isError": false,
+  "pagination_complete": true,
+  "permit_id": "fdp-476c191c153440889f5c870362a0d8e7",
+  "protocol_method": "tools/call",
+  "raw_response_digest": "sha256:359529248819edd96e8a152aa82a21c50bd1002f23321bf3657e2b3f9d94ef32",
+  "received_at": "2026-09-30T03:15:29.326Z",
+  "request_id": "fin-cbb4a53b9bd3478f86091235c543fd58",
+  "requested_at": "2026-09-30T03:15:25.878Z",
+  "result": {
+    "content": [
+      {
+        "text": "[\n  [\n    \"1790737200000\",\n    \"83348.4\",\n    \"83386\",\n    \"83292.3\",\n    \"83296.1\",\n    \"29051.84\",\n    \"290.5184\",\n    \"24212493.71003\",\n    \"0\"\n  ]\n]",
+        "type": "text"
+      }
+    ],
+    "structuredContent": {
+      "data": [
+        [
+          "1790737200000",
+          "83348.4",
+          "83386",
+          "83292.3",
+          "83296.1",
+          "29051.84",
+          "290.5184",
+          "24212493.71003",
+          "0"
+        ]
+      ]
+    }
+  },
+  "schema_version": "1.0",
+  "source_id": "fin_data_mcp_render_prod",
+  "tool_name": "crypto_candles"
+}

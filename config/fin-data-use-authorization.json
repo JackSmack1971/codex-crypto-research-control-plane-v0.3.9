@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "upstream_provider_id": "okx",
+  "provider": "OKX",
+  "scope": "institutional_crypto_market_data_for_fund_research_and_ai_processing",
+  "status": "BLOCKED_PENDING_RIGHTS_CONFIRMATION",
+  "reason": "The published OKX API Agreement restricts Market Data use; no jurisdiction-specific fund authorization or written license is recorded.",
+  "evidence": [
+    {
+      "uri": "https://github.com/CohenD/fin-data-mcp",
+      "description": "Upstream provider documentation identifies OKX as the crypto data backend.",
+      "observed_at": "2026-09-30T04:20:00Z"
+    },
+    {
+      "uri": "https://www.okx.com/en-ae/help/okx-api-agreement?j2ke8=9",
+      "description": "Published API Agreement reviewed; Sections 3.2(a), 9.2-9.4 address public market data and use restrictions. UAE-localized text; applicability to the fund entity/jurisdiction is unverified.",
+      "observed_at": "2026-09-30T04:20:00Z"
+    },
+    {
+      "uri": "https://www.okx.com/en-us/help/okx-api-agreement",
+      "description": "Official US-English agreement page reviewed 2026-09-30. Sections 1.8, 3.2(a), and 9.2-9.4 cover target market-data types, public endpoints, use restrictions, and separate commercial/institutional data licensing; this does not establish the fund's contracting entity or applicable jurisdiction.",
+      "observed_at": "2026-09-30T04:40:54Z"
+    }
+  ],
+  "required_evidence_to_authorize": [
+    "jurisdiction_and_contracting_entity_review",
+    "written_provider_license_or_authorization_covering_institutional_fund_research",
+    "written_scope_for_durable_storage_and_AI_processing"
+  ],
+  "authorization_decision": null
+}

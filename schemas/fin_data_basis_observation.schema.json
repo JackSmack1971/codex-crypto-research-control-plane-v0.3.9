@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "status", "evidence_role", "source_id", "attempt_id", "ledger_digest", "bar_interval", "bar_timestamp", "provider_timestamp_semantics", "confirm", "received_at", "age_seconds_since_provider_bar_timestamp_at_retrieval", "instruments", "spot_perpetual_basis", "index_comparability", "admissibility"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "status": {"const": "DIAGNOSTIC"},
+    "evidence_role": {"const": "DIAGNOSTIC"},
+    "source_id": {"const": "fin_data_mcp_render_prod"},
+    "attempt_id": {"type": "string", "minLength": 1},
+    "ledger_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "bar_interval": {"const": "1m"},
+    "bar_timestamp": {"type": "string", "format": "date-time"},
+    "provider_timestamp_semantics": {"const": "BAR_START_INFERRED_FROM_SEQUENCE"},
+    "confirm": {"const": true},
+    "received_at": {"type": "string", "format": "date-time"},
+    "age_seconds_since_provider_bar_timestamp_at_retrieval": {"type": "integer", "minimum": 0},
+    "instruments": {
+      "type": "object", "additionalProperties": false,
+      "required": ["spot", "perpetual", "index"],
+      "properties": {
+        "spot": {"type": "object", "additionalProperties": false, "required": ["instrument_id", "quote_currency", "close", "raw_response_digest", "response_envelope_digest"], "properties": {"instrument_id": {"type": "string", "minLength": 1}, "quote_currency": {"const": "USDT"}, "close": {"type": "string", "pattern": "^[0-9]+(\\.[0-9]+)?$"}, "raw_response_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}, "response_envelope_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}}},
+        "perpetual": {"type": "object", "additionalProperties": false, "required": ["instrument_id", "quote_currency", "close", "raw_response_digest", "response_envelope_digest"], "properties": {"instrument_id": {"type": "string", "minLength": 1}, "quote_currency": {"const": "USDT"}, "close": {"type": "string", "pattern": "^[0-9]+(\\.[0-9]+)?$"}, "raw_response_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}, "response_envelope_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}}},
+        "index": {"type": "object", "additionalProperties": false, "required": ["instrument_id", "quote_currency", "close", "raw_response_digest", "response_envelope_digest"], "properties": {"instrument_id": {"type": "string", "minLength": 1}, "quote_currency": {"const": "USD"}, "close": {"type": "string", "pattern": "^[0-9]+(\\.[0-9]+)?$"}, "raw_response_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}, "response_envelope_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}}}
+      }
+    },
+    "spot_perpetual_basis": {
+      "type": "object", "additionalProperties": false,
+      "required": ["definition", "quote_currency", "absolute", "basis_points_of_spot"],
+      "properties": {
+        "definition": {"const": "perpetual_close_minus_spot_close"},
+        "quote_currency": {"const": "USDT"},
+        "absolute": {"type": "string", "pattern": "^-?[0-9]+(\\.[0-9]+)?$"},
+        "basis_points_of_spot": {"type": "string", "pattern": "^-?[0-9]+(\\.[0-9]+)?$"}
+      }
+    },
+    "index_comparability": {"const": "NOT_COMPARABLE_WITH_USDT_QUOTES_WITHOUT_FX_CONVERSION"},
+    "admissibility": {"const": "NOT_ADMITTED"}
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "schema_version": "1.0",
+  "source_id": "fin_data_mcp_render_prod",
+  "enabled": true,
+  "runtime": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+  "transport": "streamable_http",
+  "capabilities": [
+    {
+      "capability_id": "fin.crypto.instrument_discovery",
+      "tool_name": "crypto_list_instruments",
+      "requirement": "EVENT_OPTIONAL",
+      "severity": "DEGRADED",
+      "admission": "DISABLED_UNTIL_QUALIFIED"
+    },
+    {
+      "capability_id": "fin.crypto.funding",
+      "tool_name": "crypto_funding_rate",
+      "requirement": "EVENT_OPTIONAL",
+      "severity": "DEGRADED",
+      "admission": "DISABLED_UNTIL_QUALIFIED"
+    },
+    {
+      "capability_id": "fin.crypto.open_interest",
+      "tool_name": "crypto_open_interest",
+      "requirement": "EVENT_OPTIONAL",
+      "severity": "DEGRADED",
+      "admission": "DISABLED_UNTIL_QUALIFIED"
+    },
+    {
+      "capability_id": "fin.crypto.long_short_ratio",
+      "tool_name": "crypto_long_short_ratio",
+      "requirement": "EVENT_OPTIONAL",
+      "severity": "DEGRADED",
+      "admission": "DISABLED_UNTIL_QUALIFIED"
+    },
+    {
+      "capability_id": "fin.crypto.mark_price",
+      "tool_name": "crypto_mark_price",
+      "requirement": "EVENT_OPTIONAL",
+      "severity": "DEGRADED",
+      "admission": "DISABLED_UNTIL_QUALIFIED"
+    },
+    {
+      "capability_id": "fin.crypto.ticker",
+      "tool_name": "crypto_ticker",
+      "requirement": "EVENT_OPTIONAL",
+      "severity": "DEGRADED",
+      "admission": "DISABLED_UNTIL_QUALIFIED"
+    },
+    {
+      "capability_id": "fin.crypto.orderbook",
+      "tool_name": "crypto_orderbook",
+      "requirement": "EVENT_OPTIONAL",
+      "severity": "INFO",
+      "admission": "DISABLED_UNTIL_QUALIFIED"
+    },
+    {
+      "capability_id": "fin.crypto.recent_trades",
+      "tool_name": "crypto_recent_trades",
+      "requirement": "EVENT_OPTIONAL",
+      "severity": "INFO",
+      "admission": "DISABLED_UNTIL_QUALIFIED"
+    },
+    {
+      "capability_id": "fin.crypto.candles",
+      "tool_name": "crypto_candles",
+      "requirement": "EVENT_OPTIONAL",
+      "severity": "INFO",
+      "admission": "DISABLED_UNTIL_QUALIFIED"
+    },
+    {
+      "capability_id": "fin.crypto.index_candles",
+      "tool_name": "crypto_index_candles",
+      "requirement": "EVENT_OPTIONAL",
+      "severity": "INFO",
+      "admission": "DISABLED_UNTIL_QUALIFIED"
+    }
+  ],
+  "notes": [
+    "Provider rate limits and usage terms have not been verified; authenticate only through the configured MCP endpoint after attempt governance is initialized.",
+    "No capability is globally CORE. A consuming feature contract must classify requirements and define a source-specific freshness bound.",
+    "No fallback source is authorized."
+  ]
+}

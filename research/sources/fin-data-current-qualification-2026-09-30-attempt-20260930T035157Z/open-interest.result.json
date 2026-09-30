@@ -1,0 +1,39 @@
+{
+  "arguments_digest": "sha256:bd087306e8edd126031150c388f7a7852f034b29cdc9b8e37ea10e93ee7ebacc",
+  "capability_id": "fin.crypto.open_interest",
+  "content_type": "text/event-stream",
+  "deployment_id": "dep-datvbjflk1mc73d3pitg",
+  "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+  "http_status": 200,
+  "isError": false,
+  "pagination_complete": true,
+  "permit_id": "fdp-906f83402abd455f8abe1a97dbcb15a5",
+  "protocol_method": "tools/call",
+  "raw_response_digest": "sha256:f3e031caea57f9e1407471dae971f800db35905bdbd011b7f82e8ba8b904e46c",
+  "received_at": "2026-09-30T03:55:09.060Z",
+  "request_id": "fin-62e3233b444748b28c776ad217ed5238",
+  "requested_at": "2026-09-30T03:55:06.054Z",
+  "result": {
+    "content": [
+      {
+        "text": "[\n  {\n    \"instId\": \"BTC-USDT-SWAP\",\n    \"instType\": \"SWAP\",\n    \"oi\": \"2809197.94000000833\",\n    \"oiCcy\": \"28091.9794000000833\",\n    \"oiUsd\": \"2339606793.95372693754054\",\n    \"ts\": \"1790740507680\"\n  }\n]",
+        "type": "text"
+      }
+    ],
+    "structuredContent": {
+      "data": [
+        {
+          "instId": "BTC-USDT-SWAP",
+          "instType": "SWAP",
+          "oi": "2809197.94000000833",
+          "oiCcy": "28091.9794000000833",
+          "oiUsd": "2339606793.95372693754054",
+          "ts": "1790740507680"
+        }
+      ]
+    }
+  },
+  "schema_version": "1.0",
+  "source_id": "fin_data_mcp_render_prod",
+  "tool_name": "crypto_open_interest"
+}

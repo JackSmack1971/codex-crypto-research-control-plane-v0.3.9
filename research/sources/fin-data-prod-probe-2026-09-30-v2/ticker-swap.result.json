@@ -1,0 +1,49 @@
+{
+  "arguments_digest": "sha256:e4a9df95a0fec30438c08b2e0d1cde369060cd11d3297ede8516327473b8568f",
+  "capability_id": "fin.crypto.ticker",
+  "content_type": "text/event-stream",
+  "deployment_id": "dep-datvbjflk1mc73d3pitg",
+  "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+  "http_status": 200,
+  "isError": false,
+  "pagination_complete": true,
+  "permit_id": "fdp-a9ef86e220c447b8af08a7711bf8c144",
+  "protocol_method": "tools/call",
+  "raw_response_digest": "sha256:8ee22302f0e801b9d38769d351abfeee38ad7c91ad6b3dfc3ddab48e5dfdaefb",
+  "received_at": "2026-09-30T03:15:17.939Z",
+  "request_id": "fin-61201000be7c498496bee0e1cd662bec",
+  "requested_at": "2026-09-30T03:15:14.645Z",
+  "result": {
+    "content": [
+      {
+        "text": "[\n  {\n    \"instType\": \"SWAP\",\n    \"instId\": \"BTC-USDT-SWAP\",\n    \"last\": \"83296\",\n    \"lastSz\": \"0.1\",\n    \"askPx\": \"83296.1\",\n    \"askSz\": \"1110.37\",\n    \"bidPx\": \"83296\",\n    \"bidSz\": \"966.13\",\n    \"open24h\": \"82895.5\",\n    \"high24h\": \"84544.9\",\n    \"low24h\": \"82850.8\",\n    \"volCcy24h\": \"64795.3927\",\n    \"vol24h\": \"6479539.27\",\n    \"ts\": \"1790738116063\",\n    \"sodUtc0\": \"83627.1\",\n    \"sodUtc8\": \"83049.8\"\n  }\n]",
+        "type": "text"
+      }
+    ],
+    "structuredContent": {
+      "data": [
+        {
+          "askPx": "83296.1",
+          "askSz": "1110.37",
+          "bidPx": "83296",
+          "bidSz": "966.13",
+          "high24h": "84544.9",
+          "instId": "BTC-USDT-SWAP",
+          "instType": "SWAP",
+          "last": "83296",
+          "lastSz": "0.1",
+          "low24h": "82850.8",
+          "open24h": "82895.5",
+          "sodUtc0": "83627.1",
+          "sodUtc8": "83049.8",
+          "ts": "1790738116063",
+          "vol24h": "6479539.27",
+          "volCcy24h": "64795.3927"
+        }
+      ]
+    }
+  },
+  "schema_version": "1.0",
+  "source_id": "fin_data_mcp_render_prod",
+  "tool_name": "crypto_ticker"
+}

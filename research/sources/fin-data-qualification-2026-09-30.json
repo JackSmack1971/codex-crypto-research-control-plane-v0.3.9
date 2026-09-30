@@ -1,0 +1,97 @@
+{
+  "capabilities": {
+    "fin.crypto.candles": {
+      "admitted": false,
+      "age_seconds": null,
+      "reason": "endpoint_reachability_unverified",
+      "severity": "INFO",
+      "status": "BLOCKED",
+      "tool_name": "crypto_candles"
+    },
+    "fin.crypto.funding": {
+      "admitted": false,
+      "age_seconds": null,
+      "reason": "endpoint_reachability_unverified",
+      "severity": "DEGRADED",
+      "status": "BLOCKED",
+      "tool_name": "crypto_funding_rate"
+    },
+    "fin.crypto.index_candles": {
+      "admitted": false,
+      "age_seconds": null,
+      "reason": "endpoint_reachability_unverified",
+      "severity": "INFO",
+      "status": "BLOCKED",
+      "tool_name": "crypto_index_candles"
+    },
+    "fin.crypto.instrument_discovery": {
+      "admitted": false,
+      "age_seconds": null,
+      "reason": "endpoint_reachability_unverified",
+      "severity": "DEGRADED",
+      "status": "BLOCKED",
+      "tool_name": "crypto_list_instruments"
+    },
+    "fin.crypto.long_short_ratio": {
+      "admitted": false,
+      "age_seconds": null,
+      "reason": "endpoint_reachability_unverified",
+      "severity": "DEGRADED",
+      "status": "BLOCKED",
+      "tool_name": "crypto_long_short_ratio"
+    },
+    "fin.crypto.mark_price": {
+      "admitted": false,
+      "age_seconds": null,
+      "reason": "endpoint_reachability_unverified",
+      "severity": "DEGRADED",
+      "status": "BLOCKED",
+      "tool_name": "crypto_mark_price"
+    },
+    "fin.crypto.open_interest": {
+      "admitted": false,
+      "age_seconds": null,
+      "reason": "endpoint_reachability_unverified",
+      "severity": "DEGRADED",
+      "status": "BLOCKED",
+      "tool_name": "crypto_open_interest"
+    },
+    "fin.crypto.orderbook": {
+      "admitted": false,
+      "age_seconds": null,
+      "reason": "endpoint_reachability_unverified",
+      "severity": "INFO",
+      "status": "BLOCKED",
+      "tool_name": "crypto_orderbook"
+    },
+    "fin.crypto.recent_trades": {
+      "admitted": false,
+      "age_seconds": null,
+      "reason": "endpoint_reachability_unverified",
+      "severity": "INFO",
+      "status": "BLOCKED",
+      "tool_name": "crypto_recent_trades"
+    },
+    "fin.crypto.ticker": {
+      "admitted": false,
+      "age_seconds": null,
+      "reason": "endpoint_reachability_unverified",
+      "severity": "DEGRADED",
+      "status": "BLOCKED",
+      "tool_name": "crypto_ticker"
+    }
+  },
+  "capability_policy_digest": "sha256:d83654d47338033d9e62b0c7e5bd59bd2c5f0240fbb68d771859c7ed0b425503",
+  "deployment_id": null,
+  "endpoint_reason": "endpoint_reachability_unverified",
+  "endpoint_status": "BLOCKED",
+  "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+  "fallback": "NONE",
+  "identity_digest": "sha256:8aa8fd9ae616769286e1646944fbd519c6d2aeeeb392707723e85e20c3aec379",
+  "observed_at": "2026-09-30T01:58:29Z",
+  "observed_endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+  "schema_version": "1.0",
+  "snapshot_digest": "sha256:6e24e164ab633eb26411a3082921faf991fd392204762d18d5ac5547cd181592",
+  "source_id": "fin_data_mcp_render_prod",
+  "status": "BLOCKED"
+}

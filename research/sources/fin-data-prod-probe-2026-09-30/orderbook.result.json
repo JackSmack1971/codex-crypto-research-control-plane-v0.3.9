@@ -1,0 +1,98 @@
+{
+  "arguments_digest": "sha256:0e8c53d52ea723373f4d90ebdf5ff053055fad51c5f0391d8a41b488d0520277",
+  "capability_id": "fin.crypto.orderbook",
+  "content_type": "text/event-stream",
+  "deployment_id": "dep-datvbjflk1mc73d3pitg",
+  "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+  "http_status": 200,
+  "isError": false,
+  "pagination_complete": true,
+  "permit_id": "fdp-40c8d31326804b12abcf0f7128209edb",
+  "raw_response_digest": "sha256:41836a23a7bb1e13fba4c8b04d77896d9eb5b6e99f920e811964fb7f010c5ad2",
+  "received_at": "2026-09-30T02:43:22.412Z",
+  "request_id": "fin-c81e41250b74464ba5528a2bd4ec8ae7",
+  "requested_at": "2026-09-30T02:43:18.775Z",
+  "result": {
+    "content": [
+      {
+        "text": "[\n  {\n    \"asks\": [\n      [\n        \"83296.1\",\n        \"1094.04\",\n        \"0\",\n        \"41\"\n      ],\n      [\n        \"83296.2\",\n        \"1.61\",\n        \"0\",\n        \"2\"\n      ],\n      [\n        \"83296.3\",\n        \"0.02\",\n        \"0\",\n        \"2\"\n      ],\n      [\n        \"83296.4\",\n        \"3.18\",\n        \"0\",\n        \"3\"\n      ],\n      [\n        \"83296.5\",\n        \"5\",\n        \"0\",\n        \"1\"\n      ]\n    ],\n    \"bids\": [\n      [\n        \"83296\",\n        \"214.78\",\n        \"0\",\n        \"17\"\n      ],\n      [\n        \"83295.9\",\n        \"0.01\",\n        \"0\",\n        \"1\"\n      ],\n      [\n        \"83295.8\",\n        \"0.01\",\n        \"0\",\n        \"1\"\n      ],\n      [\n        \"83295.7\",\n        \"0.01\",\n        \"0\",\n        \"1\"\n      ],\n      [\n        \"83295.6\",\n        \"0.01\",\n        \"0\",\n        \"1\"\n      ]\n    ],\n    \"ts\": \"1790736200759\",\n    \"seqId\": 342934154961\n  }\n]",
+        "type": "text"
+      }
+    ],
+    "structuredContent": {
+      "data": [
+        {
+          "asks": [
+            [
+              "83296.1",
+              "1094.04",
+              "0",
+              "41"
+            ],
+            [
+              "83296.2",
+              "1.61",
+              "0",
+              "2"
+            ],
+            [
+              "83296.3",
+              "0.02",
+              "0",
+              "2"
+            ],
+            [
+              "83296.4",
+              "3.18",
+              "0",
+              "3"
+            ],
+            [
+              "83296.5",
+              "5",
+              "0",
+              "1"
+            ]
+          ],
+          "bids": [
+            [
+              "83296",
+              "214.78",
+              "0",
+              "17"
+            ],
+            [
+              "83295.9",
+              "0.01",
+              "0",
+              "1"
+            ],
+            [
+              "83295.8",
+              "0.01",
+              "0",
+              "1"
+            ],
+            [
+              "83295.7",
+              "0.01",
+              "0",
+              "1"
+            ],
+            [
+              "83295.6",
+              "0.01",
+              "0",
+              "1"
+            ]
+          ],
+          "seqId": 342934154961,
+          "ts": "1790736200759"
+        }
+      ]
+    }
+  },
+  "schema_version": "1.0",
+  "source_id": "fin_data_mcp_render_prod",
+  "tool_name": "crypto_orderbook"
+}

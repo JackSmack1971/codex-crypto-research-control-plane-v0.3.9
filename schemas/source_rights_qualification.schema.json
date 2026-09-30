@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "rights_snapshot_id", "upstream_provider_id", "upstream_dataset_id", "terms", "intended_use", "use_matrix", "required_evidence", "evidence", "qualification_result", "review", "effective_at", "expires_at"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "rights_snapshot_id": {"type": "string", "minLength": 1},
+    "upstream_provider_id": {"type": "string", "minLength": 1},
+    "upstream_dataset_id": {"type": "string", "minLength": 1},
+    "terms": {"type": "object", "additionalProperties": false, "required": ["url", "version", "effective_date", "contracting_entity", "jurisdiction"], "properties": {"url": {"type": "string", "format": "uri"}, "version": {"type": ["string", "null"]}, "effective_date": {"type": ["string", "null"], "format": "date"}, "contracting_entity": {"type": ["string", "null"]}, "jurisdiction": {"type": ["string", "null"]}}},
+    "intended_use": {"type": "string", "minLength": 1},
+    "use_matrix": {"type": "object", "additionalProperties": false, "required": ["research", "durable_storage", "deterministic_derivation", "ai_llm_processing", "redistribution_publication", "institutional_commercial"], "properties": {"research": {"enum": ["PERMITTED", "PROHIBITED", "UNKNOWN"]}, "durable_storage": {"enum": ["PERMITTED", "PROHIBITED", "UNKNOWN"]}, "deterministic_derivation": {"enum": ["PERMITTED", "PROHIBITED", "UNKNOWN"]}, "ai_llm_processing": {"enum": ["PERMITTED", "PROHIBITED", "UNKNOWN"]}, "redistribution_publication": {"enum": ["PERMITTED", "PROHIBITED", "UNKNOWN"]}, "institutional_commercial": {"enum": ["PERMITTED", "PROHIBITED", "UNKNOWN"]}}},
+    "required_evidence": {"type": "array", "items": {"type": "string"}},
+    "evidence": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["url", "digest", "captured_at", "provenance", "provenance_path"], "properties": {"url": {"type": "string", "format": "uri"}, "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}, "captured_at": {"type": "string", "format": "date-time"}, "provenance": {"type": "string", "minLength": 1}, "provenance_path": {"type": "string", "minLength": 1}}}},
+    "qualification_result": {"enum": ["PASS", "BLOCK", "UNKNOWN"]},
+    "review": {"type": "object", "additionalProperties": false, "required": ["reviewer", "rationale", "authorization_documented"], "properties": {"reviewer": {"type": "string", "minLength": 1}, "rationale": {"type": "string", "minLength": 1}, "authorization_documented": {"type": "boolean"}}, "description": "Human review record. A model or reviewer opinion cannot itself confer authorization."},
+    "effective_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": ["string", "null"], "format": "date-time"}
+  }
+}

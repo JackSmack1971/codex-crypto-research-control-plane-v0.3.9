@@ -4,6 +4,8 @@ param(
 
   [string]$RuntimeFile,
 
+  [string]$ScriptArgsFile,
+
   [switch]$ProbeOnly,
 
   [string]$RuntimeOut,
@@ -51,7 +53,9 @@ function Test-PythonCandidate([string]$Executable, [string[]]$Prefix, [string]$S
         return $null
       }
     }
-    $probe = 'import json,sys; ok=sys.version_info>=(3,11); print(json.dumps({"ok":ok,"version":sys.version.split()[0],"executable":sys.executable})); raise SystemExit(0 if ok else 2)'
+    # Avoid quoted Python dictionary keys: Windows PowerShell 5.1 strips nested
+    # quotes when binding a string to a native command's -c argument.
+    $probe = 'import json,sys; ok=sys.version_info>=(3,11); print(json.dumps(dict(ok=ok,version=sys.version.split()[0],executable=sys.executable))); raise SystemExit(0 if ok else 2)'
     $output = @(& $Executable @Prefix -B -c $probe 2>&1)
     $exitCode = $LASTEXITCODE
     $text = (($output | ForEach-Object { [string]$_ }) -join "`n").Trim()
@@ -357,6 +361,24 @@ if ($ProbeOnly) {
 if ([string]::IsNullOrWhiteSpace($Script)) {
   Write-Error 'Script is required unless -ProbeOnly is used.'
   exit 2
+}
+
+if ($ScriptArgsFile) {
+  if ($ScriptArgs.Count -gt 0) {
+    Write-Error 'SCRIPT_ARGS_FILE_CANNOT_BE_COMBINED_WITH_INLINE_SCRIPT_ARGUMENTS.'
+    exit 2
+  }
+  try {
+    $scriptArgsValue = Get-Content -Raw -LiteralPath $ScriptArgsFile | ConvertFrom-Json
+    if ($scriptArgsValue -isnot [System.Array]) { throw 'expected_json_array' }
+    foreach ($scriptArg in $scriptArgsValue) {
+      if ($scriptArg -isnot [string]) { throw 'expected_string_arguments' }
+    }
+    $ScriptArgs = @($scriptArgsValue)
+  } catch {
+    Write-Error "SCRIPT_ARGS_FILE_INVALID:$($_.Exception.Message)"
+    exit 2
+  }
 }
 
 if (([System.IO.Path]::GetFileName($Script) -eq 'massive_request_gate.py') -and ($ScriptArgs | Where-Object { $_ -like '--params-json*' })) {

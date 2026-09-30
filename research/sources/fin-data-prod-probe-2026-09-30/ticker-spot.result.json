@@ -1,0 +1,48 @@
+{
+  "arguments_digest": "sha256:a4281b99574780f18fbf2d7972b6d18ef8a902b7cf1fcce5abbe198cce718301",
+  "capability_id": "fin.crypto.ticker",
+  "content_type": "text/event-stream",
+  "deployment_id": "dep-datvbjflk1mc73d3pitg",
+  "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+  "http_status": 200,
+  "isError": false,
+  "pagination_complete": true,
+  "permit_id": "fdp-4da711da1f4c4e08b0ed51ca830022a0",
+  "raw_response_digest": "sha256:4813b81e5e2056327a5e734b0e767edbb2f7fac11273c5829ddeaa4596d72d71",
+  "received_at": "2026-09-30T02:43:11.754Z",
+  "request_id": "fin-211ce1cf2a424549839e8b52596ba27d",
+  "requested_at": "2026-09-30T02:43:08.309Z",
+  "result": {
+    "content": [
+      {
+        "text": "[\n  {\n    \"instType\": \"SPOT\",\n    \"instId\": \"BTC-USDT\",\n    \"last\": \"83338.2\",\n    \"lastSz\": \"0.00005999\",\n    \"askPx\": \"83338.2\",\n    \"askSz\": \"0.50965312\",\n    \"bidPx\": \"83338.1\",\n    \"bidSz\": \"0.00798448\",\n    \"open24h\": \"83005.4\",\n    \"high24h\": \"84557.8\",\n    \"low24h\": \"82870.1\",\n    \"volCcy24h\": \"419540619.768213431\",\n    \"vol24h\": \"5017.33275716\",\n    \"ts\": \"1790736189474\",\n    \"sodUtc0\": \"83663.9\",\n    \"sodUtc8\": \"83080.2\"\n  }\n]",
+        "type": "text"
+      }
+    ],
+    "structuredContent": {
+      "data": [
+        {
+          "askPx": "83338.2",
+          "askSz": "0.50965312",
+          "bidPx": "83338.1",
+          "bidSz": "0.00798448",
+          "high24h": "84557.8",
+          "instId": "BTC-USDT",
+          "instType": "SPOT",
+          "last": "83338.2",
+          "lastSz": "0.00005999",
+          "low24h": "82870.1",
+          "open24h": "83005.4",
+          "sodUtc0": "83663.9",
+          "sodUtc8": "83080.2",
+          "ts": "1790736189474",
+          "vol24h": "5017.33275716",
+          "volCcy24h": "419540619.768213431"
+        }
+      ]
+    }
+  },
+  "schema_version": "1.0",
+  "source_id": "fin_data_mcp_render_prod",
+  "tool_name": "crypto_ticker"
+}

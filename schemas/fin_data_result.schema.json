@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "source_id", "capability_id", "tool_name", "request_id", "permit_id", "endpoint_url", "arguments_digest", "requested_at", "received_at", "isError", "pagination_complete", "raw_response_digest", "result"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "source_id": {"const": "fin_data_mcp_render_prod"},
+    "capability_id": {"type": "string", "minLength": 1},
+    "tool_name": {"type": "string", "minLength": 1},
+    "protocol_method": {"type": "string", "enum": ["initialize", "notifications/initialized", "tools/list", "tools/call"]},
+    "request_id": {"type": "string", "minLength": 1},
+    "permit_id": {"type": "string", "minLength": 1},
+    "endpoint_url": {"type": "string", "format": "uri"},
+    "deployment_id": {"type": ["string", "null"]},
+    "arguments_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "requested_at": {"type": "string", "format": "date-time"},
+    "received_at": {"type": "string", "format": "date-time"},
+    "isError": {"type": "boolean"},
+    "pagination_complete": {"type": "boolean"},
+    "http_status": {"type": ["integer", "null"], "minimum": 100, "maximum": 599},
+    "content_type": {"type": "string"},
+    "warning": {"type": "string"},
+    "error_code": {"type": "string"},
+    "raw_response_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "result": {}
+  }
+}
