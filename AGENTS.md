@@ -55,7 +55,9 @@ Massive MCP endpoint discovery is **not entitlement proof**. Evaluate `config/da
 
 ## Windows bootstrap and provider-call invariants
 
-On Windows, start a fresh governed daily attempt with `scripts/control_plane/bootstrap.cmd`; do not assume bare `python` is healthy. Bootstrap must establish the research date/run identity, prove a working Python 3.11+ executable, and emit the runtime descriptor. If no existing interpreter works and repository policy permits the bounded uv self-repair, provision only the repository-local runtime. If bootstrap remains BLOCKED, make **zero Massive provider calls**.
+On Windows, start a fresh governed daily attempt with `scripts/control_plane/bootstrap.cmd`; do not assume bare `python` is healthy. Bootstrap must establish the research date/run identity, prove a working Python 3.11+ executable, and emit the runtime descriptor. If no existing interpreter works and repository policy permits bounded self-repair through uv, provision only the repository-local runtime. If bootstrap remains BLOCKED, make **zero Massive provider calls**.
+
+The bounded self-repair runtime is repository-local under `.runtime/python`; do not install or select a global replacement interpreter.
 
 After READY, validate the emitted runtime descriptor against `schemas/python_runtime.schema.json` and invoke repository Python scripts through `scripts/control_plane/run_python.cmd -RuntimeFile <attempt-runtime.json>`. Never invoke `run_python.ps1` directly from an execution-policy-restricted shell. Do not fall back to bare `python` later in the same attempt.
 
@@ -63,7 +65,7 @@ Daily identity is research-date based: unless explicitly supplied, resolve the m
 
 Provider-facing Massive `call_api` requests are governed by `config/massive-request-policy.json` and `scripts/control_plane/massive_request_gate.py`. Initialize one attempt-scoped request ledger before the first authenticated probe, obtain a permit before every provider call, and record each result immediately. A Massive `RATE_LIMIT` warning taints the attempt; later successful retries do not erase the violation. Control/workspace operations such as endpoint search, workspace management, and local queries are outside the provider-call budget unless policy says otherwise.
 
-On Windows, structured request/result payloads and durable materialization metadata are file-bound. Pass provider parameters/completion metadata via `--request-file` / `--result-file`. Persist materialization inputs in a spec conforming to `schemas/massive_materialization_spec.schema.json` and invoke `scripts/control_plane/materialize_mcp_dataset.cmd <runtime.json> <spec.json>`. Do not embed structured JSON, timestamps, templates, or materialization metadata directly in PowerShell command lines.
+On Windows, structured request/result payloads and durable materialization metadata are file-bound. Pass provider parameters/completion metadata via `--request-file` / `--result-file`. Persist materialization inputs in a materialization spec conforming to `schemas/massive_materialization_spec.schema.json` and invoke `scripts/control_plane/materialize_mcp_dataset.cmd <runtime.json> <spec.json>`. Do not embed structured JSON, timestamps, templates, or materialization metadata directly in PowerShell command lines.
 
 ## Evidence-set and temporal integrity
 

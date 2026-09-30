@@ -1,0 +1,5 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","additionalProperties":false,
+  "required":["schema_version","bundle_id","run_id","attempt_id","research_cutoff","members","content_digest"],
+  "properties":{"schema_version":{"const":"1.0"},"bundle_id":{"type":"string","minLength":1},"run_id":{"type":"string","minLength":1},"attempt_id":{"type":"string","minLength":1},"research_cutoff":{"type":"string","format":"date-time"},"members":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["source_id","manifest_id","manifest_path","manifest_digest","status","qualification","admissibility"],"properties":{"source_id":{"type":"string","minLength":1},"manifest_id":{"type":"string","minLength":1},"manifest_path":{"type":"string","minLength":1},"manifest_digest":{"type":"string","pattern":"^sha256:[0-9a-f]{64}$"},"status":{"enum":["COMPLETE","DEGRADED","PARTIAL","BLOCKED","UNAVAILABLE"]},"qualification":{"enum":["QUALIFIED","UNQUALIFIED","EXPIRED"]},"admissibility":{"enum":["ADMITTED","NOT_ADMITTED"]}}}},"content_digest":{"type":"string","pattern":"^sha256:[0-9a-f]{64}$"}}
+}

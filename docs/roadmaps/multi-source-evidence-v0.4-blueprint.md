@@ -1,6 +1,6 @@
 # v0.4 Multi-Source Evidence Plane Blueprint
 
-**Status:** implementation blueprint; no v0.4 slice is implemented by this document.
+**Status:** Slices 1–3 implemented as an additive provider-independent evidence contract foundation; no new provider is integrated or qualified. See execution record below. Later slices remain pending.
 
 **Baseline:** repository release `0.3.9`, `VERSION`, `docs/architecture.md`, and the committed deterministic control plane.
 **Target:** an additive, source-neutral evidence plane that can govern independently qualified providers and produce one immutable, temporally bounded `EvidenceBundle` for deterministic research.
@@ -279,3 +279,17 @@ For any source integration, use its official documented MCP route and current en
 ## Completion definition
 
 This blueprint is authoritative when committed and navigable. v0.4 itself is complete only when the release closure slice passes with evidence for every included slice, all deferred/unqualified source capabilities remain visibly unavailable, and the release preserves the invariants above. This goal creates the blueprint only; it does not implement any later slice.
+
+## Execution record — source identity, manifests, and EvidenceBundle foundation
+
+**Scope completed:** the first three ordered slices are implemented together because the requested provider-independent contracts require registry identity, source manifests, and bundle references to form one testable identity chain. This foundation is parallel to the existing Massive run path; it does not modify Massive acquisition manifest bytes, daily capability decisions, pipeline inputs, forecast freezes, or introduce another provider.
+
+**Exact files changed:** `schemas/source_registry.schema.json`, `schemas/source_qualification.schema.json`, `schemas/source_acquisition_manifest.schema.json`, `schemas/evidence_bundle.schema.json`, `config/source-registry.json`, `scripts/control_plane/validate_sources.py`, `scripts/control_plane/source_evidence.py`, `scripts/control_plane/seal_source_acquisition.py`, `scripts/control_plane/build_evidence_bundle.py`, `scripts/control_plane/verify_evidence_bundle.py`, `docs/evidence-bundle-contract.md`, `tests/test_source_evidence.py`, `tests/test_structure.py`, `scripts/control_plane/validate_control_plane.py`, `AGENTS.md`, and `.codex/agents/methodology-auditor.toml`.
+
+**Acceptance criteria completed:** immutable source IDs have canonical identity digests; Massive MCP is referenced using the configured official route; qualification snapshots have a separate schema; discovery, availability, qualification, and admissibility are distinct states; source manifests bind provider/runtime/transport/adapter/capability identity, run/attempt/cutoff, status/degradation reason, dataset digest, evidence role, observation/freshness bounds, and manifest digest; bundle members reference source manifests by path, ID, and digest without copying datasets; deterministic verification fails on duplicate source identity, manifest or bundle digest tampering, member/manifest identity mismatch, run/attempt/cutoff mismatch, unavailable or unqualified/not-admitted research inputs, stale or post-cutoff observations, and source substitution; DEGRADED source status remains valid and visibly degraded rather than being promoted to COMPLETE; legacy Massive contracts remain present and unchanged.
+
+**Executed verification:** `python -m unittest discover -s tests -p test_source_evidence.py -v` (7 passed); `python scripts/control_plane/validate_sources.py` (PASS); `python scripts/control_plane/validate_control_plane.py` (PASS: 9 agents, 9 skills, 24 schemas); `python -m unittest discover -s tests -v` (51 passed); `git diff --check` (PASS). The independent pre-PR review's identity/schema/cutoff findings were addressed, and focused plus full verification passed again. These commands used the host `python` because no bootstrap attempt runtime descriptor existed; no Massive provider calls were made. A fresh post-PR review, hosted CI, and merge remain pending.
+
+**Unresolved:** the source manifest and bundle are additive contracts and verification primitives; daily acquisition, deterministic pipeline consumption, qualification evidence generation/expiry transition, and legacy Massive wrapper are not wired yet. Registry identity digest is immutable-by-validation, but registry change history is not persisted by a stateful registry transition tool. No source other than Massive's identity reference is registered, and this does not assert Massive generalized qualification/admissibility.
+
+**Next-slice readiness:** Slice 4 (canonical asset and instrument identity) may proceed after this foundation; Slice 7/8 pipeline consumption and cross-source coverage still depend on the intervening adapter and reconciliation slices. No new source integration is ready to be called qualified. PR, merged commit, and review evidence will be appended here after completion.
