@@ -1,0 +1,96 @@
+{
+  "attempt_id": "fin-data-diagnostic-all-tickers-2026-09-30",
+  "calls": [
+    {
+      "arguments": {
+        "capabilities": {},
+        "clientInfo": {
+          "name": "fin-data-governed-source",
+          "version": "0.1.0"
+        },
+        "protocolVersion": "2024-11-05"
+      },
+      "arguments_digest": "sha256:b8893e25ad51147216d879ad93d670f09f575a43253e9511c04ace125cfe2e6e",
+      "capability_id": "fin.mcp.initialize",
+      "completed_at": "2026-09-30T03:29:07.302Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-3a3807c466cd4a6c82ba3b3cfa9b0b71",
+      "permitted_at": "2026-09-30T03:29:04.670Z",
+      "request_id": "fin-38656a56506042d1a4a04035e30310ce",
+      "result_digest": "sha256:6ab76d837ef9f376cc5dca7841605e17abd1b320c8cb0c398544dc5dc9ba5f59",
+      "tool_name": "initialize"
+    },
+    {
+      "arguments": {},
+      "arguments_digest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "capability_id": "fin.mcp.initialized_notification",
+      "completed_at": "2026-09-30T03:29:08.070Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-8c84263fe5c94b1ab27e7b0ed3221ba4",
+      "permitted_at": "2026-09-30T03:29:07.676Z",
+      "request_id": "fin-690e363f4bb444c2a54cf949891fd261",
+      "result_digest": "sha256:d339226fe752cecf764d15363988563c84024d18d4aa86ff50494dae2e7ef742",
+      "tool_name": "notifications/initialized"
+    },
+    {
+      "arguments": {},
+      "arguments_digest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "capability_id": "fin.mcp.tools_list",
+      "completed_at": "2026-09-30T03:29:12.873Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-992fdecc6c7245a5b623c5455c05542e",
+      "permitted_at": "2026-09-30T03:29:08.435Z",
+      "request_id": "fin-45d79b73313849b2bf1b8af8245461bc",
+      "result_digest": "sha256:0a9fce4207a6ab3a956b275e92d88ce6d597e9deaa7434fb95671f93e5fdb253",
+      "tool_name": "tools/list"
+    },
+    {
+      "arguments": {
+        "arguments": {
+          "instType": "SPOT"
+        },
+        "name": "crypto_all_tickers"
+      },
+      "arguments_digest": "sha256:a6b81428fcb5d5b1e7dd29d85e0222c6d21c92a54fd5eb07208d90b04edf3521",
+      "capability_id": "fin.mcp.diagnostic.crypto_all_tickers",
+      "completed_at": "2026-09-30T03:29:16.950Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-f8bbaf83e3944724a10424c1c4511af4",
+      "permitted_at": "2026-09-30T03:29:13.387Z",
+      "request_id": "fin-9e6298efaf97446f8af328a287a8bb1e",
+      "result_digest": "sha256:053ea69237342a2c26b41de8ed7a66a103d8245f72ee16a08c700fb500d31a9b",
+      "tool_name": "crypto_all_tickers"
+    },
+    {
+      "arguments": {
+        "arguments": {
+          "instType": "SWAP"
+        },
+        "name": "crypto_all_tickers"
+      },
+      "arguments_digest": "sha256:ac3d3a3d9517ffefb53a2cf2ed291b32d4067eb12eaf16196d00fa1a9d8442b6",
+      "capability_id": "fin.mcp.diagnostic.crypto_all_tickers",
+      "completed_at": "2026-09-30T03:29:20.614Z",
+      "endpoint_url": "https://fin-data-mcp-http-v02-prod.onrender.com/mcp",
+      "outcome": "SUCCESS",
+      "permit_id": "fdp-6efeecc72fc84052ae1d6742eccc0d21",
+      "permitted_at": "2026-09-30T03:29:17.357Z",
+      "request_id": "fin-a10bf4f78d6e44fda03390f11ddb632a",
+      "result_digest": "sha256:53243dc9c78816e548c299d46afcb935c7934fe4e7ebd11ae7c382bb5afed8b7",
+      "tool_name": "crypto_all_tickers"
+    }
+  ],
+  "content_digest": "sha256:dc0be7c2865e91019855b15a0052b16aeb7afa7ccd064998b077e52d9e8dc85c",
+  "created_at": "2026-09-30T03:29:04.238Z",
+  "diagnostic_policy_digest": "sha256:d4a58d888b51da13560927bc1e2ae1bd8f3252ce63b6bd26dec76e92a040c5a5",
+  "policy_digest": "sha256:7e0823a763cae1a885578792de4dc53ba0392e2019b23368d8b7476b2e12860a",
+  "schema_version": "1.0",
+  "sealed_at": "2026-09-30T03:29:20.808Z",
+  "source_id": "fin_data_mcp_render_prod",
+  "status": "SEALED",
+  "tainted": false
+}

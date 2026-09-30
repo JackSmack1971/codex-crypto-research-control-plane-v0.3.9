@@ -49,15 +49,23 @@ def main() -> int:
             if path.exists():
                 print("IMMUTABLE_CONFLICT:" + str(path)); return 3
             policy = _read(ROOT / "config/fin-data-request-policy.json")
+            diagnostic_policy = _read(ROOT / "config/fin-data-diagnostic-operations.json")
             _write(path, {"schema_version": "1.0", "source_id": "fin_data_mcp_render_prod",
                           "attempt_id": args.attempt_id, "created_at": _now(), "policy_digest": digest(policy),
+                          "diagnostic_policy_digest": digest(diagnostic_policy),
                           "status": "OPEN", "tainted": False, "calls": []})
             print("LEDGER_READY:" + str(path)); return 0
         ledger = _read(path)
+        diagnostic_policy = _read(ROOT / "config/fin-data-diagnostic-operations.json")
+        diagnostic_operations = {item["capability_id"]: item for item in diagnostic_policy.get("operations", [])}
+        diagnostic_digest = digest(diagnostic_policy)
         if args.command == "verify":
             policy = _read(ROOT / "config/fin-data-request-policy.json")
             if ledger.get("policy_digest") != digest(policy):
                 print("LEDGER_POLICY_IDENTITY_MISMATCH"); return 1
+            if (any(call.get("capability_id") in diagnostic_operations for call in ledger.get("calls", []))
+                    and ledger.get("diagnostic_policy_digest") != diagnostic_digest):
+                print("LEDGER_DIAGNOSTIC_POLICY_IDENTITY_MISMATCH"); return 1
             expected = ledger.get("content_digest")
             actual = digest({key: value for key, value in ledger.items() if key != "content_digest"})
             if ledger.get("status") != "SEALED" or expected != actual:
@@ -83,6 +91,10 @@ def main() -> int:
             if allowed is None:
                 allowed = next((item for item in policy["control_operations"]
                                 if item["capability_id"] == args.capability_id), None)
+            if allowed is None:
+                allowed = diagnostic_operations.get(args.capability_id)
+                if allowed is not None and ledger.get("diagnostic_policy_digest") != diagnostic_digest:
+                    print("DIAGNOSTIC_POLICY_NOT_BOUND_TO_LEDGER"); return 4
             if allowed is None or allowed["tool_name"] != args.tool_name:
                 print("REQUEST_NOT_REGISTERED"); return 4
             if not args.request_id or any(item["request_id"] == args.request_id for item in ledger["calls"]):
@@ -92,6 +104,17 @@ def main() -> int:
             arguments = json.loads(Path(args.arguments_file).read_text(encoding="utf-8"))
             if not isinstance(arguments, dict):
                 print("REQUEST_ARGUMENTS_NOT_OBJECT"); return 4
+            if args.capability_id in diagnostic_operations:
+                operation = diagnostic_operations[args.capability_id]
+                if operation.get("read_only") is not True or operation.get("admission") != "PROHIBITED":
+                    print("DIAGNOSTIC_OPERATION_NOT_READ_ONLY"); return 4
+                if (set(arguments) != {"name", "arguments"}
+                        or arguments.get("name") != operation["tool_name"]
+                        or not isinstance(arguments.get("arguments"), dict)):
+                    print("DIAGNOSTIC_WIRE_TOOL_MISMATCH"); return 4
+                input_errors = validate_schema(arguments["arguments"], operation["arguments_schema"])
+                if input_errors:
+                    print("DIAGNOSTIC_ARGUMENTS_INVALID:" + ";".join(input_errors)); return 4
             runtime = _read(ROOT / "config/source-capabilities/fin-data.json")["runtime"]
             call = {"request_id": args.request_id, "permit_id": "fdp-" + uuid.uuid4().hex,
                     "capability_id": args.capability_id, "tool_name": args.tool_name,

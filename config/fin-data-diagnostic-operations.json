@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "source_id": "fin_data_mcp_render_prod",
+  "operations": [
+    {
+      "capability_id": "fin.mcp.diagnostic.crypto_all_tickers",
+      "tool_name": "crypto_all_tickers",
+      "protocol_method": "tools/call",
+      "read_only": true,
+      "arguments_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["instType"],
+        "properties": {
+          "instType": {"type": "string", "enum": ["SPOT", "SWAP", "FUTURES"]}
+        }
+      },
+      "evidence_role": "DIAGNOSTIC",
+      "admission": "PROHIBITED"
+    }
+  ]
+}

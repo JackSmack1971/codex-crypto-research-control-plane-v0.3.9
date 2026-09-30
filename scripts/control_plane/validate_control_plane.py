@@ -38,6 +38,8 @@ SCHEMAS = [
     "source_registry.schema.json", "source_qualification.schema.json",
     "source_acquisition_manifest.schema.json", "evidence_bundle.schema.json",
     "fin_data_request.schema.json", "fin_data_result.schema.json",
+    "fin_data_diagnostic_operations.schema.json",
+    "fin_data_basis_observation.schema.json",
     "fin_data_qualification_report.schema.json",
     "fin_data_response_contracts.schema.json",
 ]
@@ -210,9 +212,12 @@ def check_fin_data_config(errors: list[str]) -> None:
         source = json.loads((ROOT / "config" / "source-capabilities" / "fin-data.json").read_text(encoding="utf-8"))
         policy = json.loads((ROOT / "config" / "fin-data-request-policy.json").read_text(encoding="utf-8"))
         contracts = json.loads((ROOT / "config" / "fin-data-response-contracts.json").read_text(encoding="utf-8"))
+        diagnostic_operations = json.loads((ROOT / "config" / "fin-data-diagnostic-operations.json").read_text(encoding="utf-8"))
         response_schema = json.loads((ROOT / "schemas" / "fin_data_response_contracts.schema.json").read_text(encoding="utf-8"))
+        diagnostic_schema = json.loads((ROOT / "schemas" / "fin_data_diagnostic_operations.schema.json").read_text(encoding="utf-8"))
         from validate_artifact import validate as validate_schema
         errors.extend(f"fin-data-response-contracts.schema:{item}" for item in validate_schema(contracts, response_schema))
+        errors.extend(f"fin-data-diagnostic-operations.schema:{item}" for item in validate_schema(diagnostic_operations, diagnostic_schema))
         ids = [item.get("capability_id") for item in source.get("capabilities", [])]
         if source.get("source_id") != "fin_data_mcp_render_prod":
             errors.append("fin-data-capabilities:source-identity-mismatch")
@@ -233,6 +238,10 @@ def check_fin_data_config(errors: list[str]) -> None:
             errors.append("fin-data-request-policy:missing-result-or-rate-limit-control")
         if policy.get("max_in_flight") != 1 or policy.get("rate_limit_recovery") != "NEW_ATTEMPT_REQUIRED":
             errors.append("fin-data-request-policy:invalid-concurrency-or-recovery")
+        diagnostic_ids = [item.get("capability_id") for item in diagnostic_operations.get("operations", [])]
+        if (diagnostic_operations.get("source_id") != source.get("source_id")
+                or len(diagnostic_ids) != len(set(diagnostic_ids))):
+            errors.append("fin-data-diagnostic-operations:identity-mismatch")
         contract_ids = [item.get("capability_id") for item in contracts.get("contracts", [])]
         if contracts.get("source_id") != source.get("source_id") or set(contract_ids) != set(ids) or len(contract_ids) != len(set(contract_ids)):
             errors.append("fin-data-response-contracts:capability-identity-mismatch")
@@ -328,6 +337,8 @@ def main() -> int:
         "config/source-registry.json", "docs/evidence-bundle-contract.md",
         "config/source-capabilities/fin-data.json", "config/fin-data-request-policy.json",
         "config/fin-data-response-contracts.json",
+        "config/fin-data-diagnostic-operations.json",
+        "schemas/fin_data_basis_observation.schema.json",
     ]
     for rel in required:
         if not (ROOT / rel).is_file():

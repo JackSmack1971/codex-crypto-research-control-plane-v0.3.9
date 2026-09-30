@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "source_id", "operations"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "source_id": {"const": "fin_data_mcp_render_prod"},
+    "operations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["capability_id", "tool_name", "protocol_method", "read_only", "arguments_schema", "evidence_role", "admission"],
+        "properties": {
+          "capability_id": {"type": "string", "minLength": 1},
+          "tool_name": {"type": "string", "pattern": "^crypto_"},
+          "protocol_method": {"const": "tools/call"},
+          "read_only": {"const": true},
+          "arguments_schema": {"type": "object"},
+          "evidence_role": {"const": "DIAGNOSTIC"},
+          "admission": {"const": "PROHIBITED"}
+        }
+      }
+    }
+  }
+}

@@ -117,6 +117,22 @@ def _wire_authorization_error(capability_id: str, tool_name: str, method: str,
         if method in {"tools/list", "notifications/initialized"} and params:
             return "unexpected_control_operation_parameters"
         return None
+    diagnostic_policy = _read(ROOT / "config/fin-data-diagnostic-operations.json")
+    diagnostic = next((item for item in diagnostic_policy.get("operations", [])
+                       if item.get("capability_id") == capability_id), None)
+    if diagnostic is not None:
+        if diagnostic.get("read_only") is not True or diagnostic.get("admission") != "PROHIBITED":
+            return "diagnostic_operation_not_read_only"
+        if diagnostic.get("tool_name") != tool_name or diagnostic.get("protocol_method") != method:
+            return "diagnostic_operation_identity_mismatch"
+        if set(params) != {"name", "arguments"} or params.get("name") != tool_name:
+            return "wire_tool_name_mismatch"
+        if not isinstance(params.get("arguments"), dict):
+            return "wire_tool_arguments_invalid"
+        from validate_artifact import validate as validate_schema
+        if validate_schema(params["arguments"], diagnostic["arguments_schema"]):
+            return "diagnostic_tool_arguments_invalid"
+        return None
     capabilities = _read(ROOT / "config/source-capabilities/fin-data.json")["capabilities"]
     registered = next((item for item in capabilities if item["capability_id"] == capability_id), None)
     if registered is None or registered.get("tool_name") != tool_name:

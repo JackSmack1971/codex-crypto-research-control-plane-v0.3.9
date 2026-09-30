@@ -1,0 +1,45 @@
+{
+  "admissibility": "NOT_ADMITTED",
+  "age_seconds_since_provider_bar_timestamp_at_retrieval": 76,
+  "attempt_id": "fin-data-basis-1m-probe-2026-09-30",
+  "bar_interval": "1m",
+  "bar_timestamp": "2026-09-30T03:30:00Z",
+  "confirm": true,
+  "evidence_role": "DIAGNOSTIC",
+  "index_comparability": "NOT_COMPARABLE_WITH_USDT_QUOTES_WITHOUT_FX_CONVERSION",
+  "instruments": {
+    "index": {
+      "close": "83248.5",
+      "instrument_id": "BTC-USD",
+      "quote_currency": "USD",
+      "raw_response_digest": "sha256:c1f5876d74944853a9526c9d33665726ac5e4a1f6e47ed6c6ce9468f35399b5d",
+      "response_envelope_digest": "sha256:048e0623afd27df5e86197fc412acb731b7e97dc0691015606607e49fcff437d"
+    },
+    "perpetual": {
+      "close": "83249.9",
+      "instrument_id": "BTC-USDT-SWAP",
+      "quote_currency": "USDT",
+      "raw_response_digest": "sha256:2f2f6e3ed200011b764ec4f220c17f59aec6db9d247f928303b903d63211500d",
+      "response_envelope_digest": "sha256:7e38a95ccb68371080709e4ef0865187ebd38c61f9d0fba74180c578ed308760"
+    },
+    "spot": {
+      "close": "83293.6",
+      "instrument_id": "BTC-USDT",
+      "quote_currency": "USDT",
+      "raw_response_digest": "sha256:a997b3abb37be3f05ebe4a5841871d5ee0174ea243b8fdd55320b6d68af102d3",
+      "response_envelope_digest": "sha256:bc77212025f09c560976247061dd5ff1860d19335a9cd03ab403b42b3323d991"
+    }
+  },
+  "ledger_digest": "sha256:087713fedb4214bf61c6f06115a9f63037d6136adfd97499ce997c1fb36f92ab",
+  "provider_timestamp_semantics": "BAR_START_INFERRED_FROM_SEQUENCE",
+  "received_at": "2026-09-30T03:31:16.031000Z",
+  "schema_version": "1.0",
+  "source_id": "fin_data_mcp_render_prod",
+  "spot_perpetual_basis": {
+    "absolute": "-43.7",
+    "basis_points_of_spot": "-5.246502",
+    "definition": "perpetual_close_minus_spot_close",
+    "quote_currency": "USDT"
+  },
+  "status": "DIAGNOSTIC"
+}

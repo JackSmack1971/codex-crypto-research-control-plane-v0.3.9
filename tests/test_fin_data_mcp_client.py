@@ -9,7 +9,8 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts/control_plane"))
-from fin_data_mcp_client import _complete_payload, _rate_limit_signal, invoke  # noqa: E402
+from fin_data_mcp_client import (_complete_payload, _rate_limit_signal, _wire_authorization_error,
+                                 invoke)  # noqa: E402
 
 
 class FinDataMcpClientTests(unittest.TestCase):
@@ -23,6 +24,18 @@ class FinDataMcpClientTests(unittest.TestCase):
         self.assertTrue(_rate_limit_signal(200, {"code": -32000, "message": "RATE_LIMIT exceeded"}))
         self.assertTrue(_rate_limit_signal(200, {"message": "Too many requests"}))
         self.assertFalse(_rate_limit_signal(200, {"message": "invalid instrument"}))
+
+    def test_diagnostic_tool_is_explicit_read_only_and_schema_bounded(self):
+        capability = "fin.mcp.diagnostic.crypto_all_tickers"
+        self.assertIsNone(_wire_authorization_error(
+            capability, "crypto_all_tickers", "tools/call",
+            {"name": "crypto_all_tickers", "arguments": {"instType": "SWAP"}}))
+        self.assertEqual("diagnostic_operation_identity_mismatch", _wire_authorization_error(
+            capability, "crypto_list_instruments", "tools/call",
+            {"name": "crypto_list_instruments", "arguments": {"instType": "SWAP"}}))
+        self.assertEqual("diagnostic_tool_arguments_invalid", _wire_authorization_error(
+            capability, "crypto_all_tickers", "tools/call",
+            {"name": "crypto_all_tickers", "arguments": {"instType": "OPTION"}}))
 
     def test_client_rejects_nonproduction_endpoint_before_permit_or_network(self):
         with tempfile.TemporaryDirectory() as td:

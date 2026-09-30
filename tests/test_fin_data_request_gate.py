@@ -77,6 +77,28 @@ class FinDataRequestGateTests(unittest.TestCase):
                                        "--arguments-file", arguments)
                 self.assertEqual(0, permit.returncode, permit.stdout + permit.stderr)
 
+    def test_diagnostic_read_operation_requires_bound_policy_and_tool_arguments(self):
+        with tempfile.TemporaryDirectory() as td:
+            ledger = Path(td) / "ledger.json"
+            arguments = Path(td) / "args.json"
+            init = self.run_gate("init", "--attempt-id", "attempt-diagnostic", "--ledger", ledger)
+            self.assertEqual(0, init.returncode)
+            arguments.write_text(json.dumps({"name": "crypto_all_tickers",
+                                             "arguments": {"instType": "INVALID"}}), encoding="utf-8")
+            invalid = self.run_gate("permit", "--ledger", ledger,
+                                    "--capability-id", "fin.mcp.diagnostic.crypto_all_tickers",
+                                    "--tool-name", "crypto_all_tickers", "--request-id", "req-invalid",
+                                    "--arguments-file", arguments)
+            self.assertEqual(4, invalid.returncode)
+            self.assertIn("DIAGNOSTIC_ARGUMENTS_INVALID", invalid.stdout)
+            arguments.write_text(json.dumps({"name": "crypto_all_tickers",
+                                             "arguments": {"instType": "SWAP"}}), encoding="utf-8")
+            valid = self.run_gate("permit", "--ledger", ledger,
+                                  "--capability-id", "fin.mcp.diagnostic.crypto_all_tickers",
+                                  "--tool-name", "crypto_all_tickers", "--request-id", "req-valid",
+                                  "--arguments-file", arguments)
+            self.assertEqual(0, valid.returncode, valid.stdout + valid.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
